@@ -193,6 +193,15 @@ def flower_detail(flower_id):
     user = get_user_info()
     return render_template('flower_detail.html', flower=flower, user=user)
 
+@app.route('/gift/<int:gift_id>')
+def gift_detail(gift_id):
+    gift = next((g for g in GIFTS if g['id'] == gift_id), None)
+    if not gift:
+        flash('Товар не найден')
+        return redirect(url_for('index'))
+    user = get_user_info()
+    return render_template('gift_detail.html', gift=gift, user=user)
+
 @app.route('/add_to_cart/<int:item_id>')
 def add_to_cart(item_id):
     if 'cart' not in session:

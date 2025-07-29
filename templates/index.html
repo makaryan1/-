@@ -9,8 +9,23 @@
     <p class="lead">Самые свежие и красивые цветы для особых моментов</p>
 </div>
 
+<!-- Переключатель категорий -->
+<div class="text-center mb-4">
+    <div class="btn-group" role="group" aria-label="Категории товаров">
+        <button type="button" class="btn btn-primary category-btn active" data-category="flowers">
+            <i class="fas fa-rose"></i> Цветы
+        </button>
+        <button type="button" class="btn btn-outline-primary category-btn" data-category="gifts">
+            <i class="fas fa-gift"></i> Подарки
+        </button>
+        <button type="button" class="btn btn-outline-primary category-btn" data-category="all">
+            <i class="fas fa-th"></i> Все товары
+        </button>
+    </div>
+</div>
+
 <!-- Категория цветов -->
-<div class="mb-5">
+<div class="mb-5 category-section" id="flowers-section">
     <h2 class="text-center mb-4">
         <i class="fas fa-rose text-pink"></i> Цветы
     </h2>
@@ -43,7 +58,7 @@
 </div>
 
 <!-- Категория подарков -->
-<div class="mb-5">
+<div class="mb-5 category-section" id="gifts-section" style="display: none;">
     <h2 class="text-center mb-4">
         <i class="fas fa-gift text-warning"></i> Подарки
     </h2>
@@ -58,6 +73,10 @@
                     <div class="mt-auto">
                         <div class="price mb-3">{{ gift.price }} ₽</div>
                         <div class="d-grid gap-2">
+                            <a href="{{ url_for('gift_detail', gift_id=gift.id) }}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
                             <a href="{{ url_for('add_to_cart', item_id=gift.id) }}" 
                                class="btn btn-warning">
                                 <i class="fas fa-cart-plus"></i> В корзину
@@ -70,4 +89,110 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Все товары -->
+<div class="mb-5 category-section" id="all-section" style="display: none;">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-th text-info"></i> Все товары
+    </h2>
+    
+    <h3 class="text-center mb-3">
+        <i class="fas fa-rose text-pink"></i> Цветы
+    </h3>
+    <div class="row mb-5">
+        {% for flower in flowers %}
+        <div class="col-md-4 mb-4">
+            <div class="card flower-card h-100">
+                <img src="{{ flower.image }}" class="card-img-top" alt="{{ flower.name }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ flower.name }}</h5>
+                    <p class="card-text">{{ flower.description }}</p>
+                    <div class="mt-auto">
+                        <div class="price mb-3">{{ flower.price }} ₽</div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('flower_detail', flower_id=flower.id) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                            <a href="{{ url_for('add_to_cart', item_id=flower.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-cart-plus"></i> В корзину
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <h3 class="text-center mb-3">
+        <i class="fas fa-gift text-warning"></i> Подарки
+    </h3>
+    <div class="row">
+        {% for gift in gifts %}
+        <div class="col-md-4 mb-4">
+            <div class="card flower-card h-100">
+                <img src="{{ gift.image }}" class="card-img-top" alt="{{ gift.name }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ gift.name }}</h5>
+                    <p class="card-text">{{ gift.description }}</p>
+                    <div class="mt-auto">
+                        <div class="price mb-3">{{ gift.price }} ₽</div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('gift_detail', gift_id=gift.id) }}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                            <a href="{{ url_for('add_to_cart', item_id=gift.id) }}" 
+                               class="btn btn-warning">
+                                <i class="fas fa-cart-plus"></i> В корзину
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const categorySections = document.querySelectorAll('.category-section');
+    
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            
+            // Убираем активный класс у всех кнопок
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Добавляем активный класс к нажатой кнопке
+            this.classList.add('active');
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary');
+            
+            // Скрываем все секции
+            categorySections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Показываем нужную секцию
+            if (category === 'flowers') {
+                document.getElementById('flowers-section').style.display = 'block';
+            } else if (category === 'gifts') {
+                document.getElementById('gifts-section').style.display = 'block';
+            } else if (category === 'all') {
+                document.getElementById('all-section').style.display = 'block';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

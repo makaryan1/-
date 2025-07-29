@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ gift.name }} - Цветочный рай{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <img src="{{ gift.image }}" class="img-fluid rounded shadow" alt="{{ gift.name }}">
+    </div>
+    <div class="col-md-6">
+        <h1 class="mb-3">{{ gift.name }}</h1>
+        <p class="lead">{{ gift.description }}</p>
+        <div class="price mb-4">{{ gift.price }} ₽</div>
+        
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('add_to_cart', item_id=gift.id) }}" 
+               class="btn btn-warning btn-lg">
+                <i class="fas fa-cart-plus"></i> Добавить в корзину
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Вернуться к каталогу
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
