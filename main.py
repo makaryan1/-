@@ -608,8 +608,8 @@ def my_orders():
 
 # Админ функции
 ADMIN_CREDENTIALS = {
-    "admin": "admin123",  # логин: пароль
-    "manager": "manager456"  # можно добавить несколько админов
+    "admin@example.com": "admin123",  # email: пароль
+    "manager@example.com": "manager456"  # можно добавить несколько админов
 }
 
 def is_admin():
