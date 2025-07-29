@@ -186,18 +186,6 @@
                         <span class="badge bg-danger">{{ session.cart.values() | sum }}</span>
                     {% endif %}
                 </a>
-                {% if session.is_admin %}
-                <a class="nav-link" href="{{ url_for('admin_panel') }}">
-                    <i class="fas fa-cogs"></i> Админ панель
-                </a>
-                <a class="nav-link" href="{{ url_for('admin_logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Выйти из админки
-                </a>
-                {% else %}
-                <a class="nav-link" href="{{ url_for('admin_login') }}">
-                    <i class="fas fa-cogs"></i> Админ
-                </a>
-                {% endif %}
                 {% if user %}
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
