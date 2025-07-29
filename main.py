@@ -607,7 +607,10 @@ def my_orders():
     return render_template('my_orders.html', orders=user_orders, user=user)
 
 # Админ функции
-ADMIN_PASSWORD = "admin123"  # Измените на свой пароль
+ADMIN_CREDENTIALS = {
+    "admin": "admin123",  # логин: пароль
+    "manager": "manager456"  # можно добавить несколько админов
+}
 
 def is_admin():
     """Проверка админских прав"""
@@ -661,46 +664,18 @@ def get_admin_stats():
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
+        username = request.form['username']
         password = request.form['password']
-        if password == ADMIN_PASSWORD:
+        
+        if username in ADMIN_CREDENTIALS and ADMIN_CREDENTIALS[username] == password:
             session['is_admin'] = True
-            flash('Добро пожаловать в админ панель!')
+            session['admin_username'] = username
+            flash(f'Добро пожаловать в админ панель, {username}!')
             return redirect(url_for('admin_panel'))
         else:
-            flash('Неверный пароль')
+            flash('Неверный логин или пароль')
     
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Админ вход</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="container mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>Админ панель</h4>
-                        </div>
-                        <div class="card-body">
-                            ''' + (''.join(f'<div class="alert alert-danger">{msg}</div>' for msg in get_flashed_messages())) + '''
-                            <form method="POST">
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Пароль</label>
-                                    <input type="password" class="form-control" name="password" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Войти</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    '''
+    return render_template('admin_login.html')
 
 @app.route('/admin')
 def admin_panel():
@@ -838,6 +813,7 @@ def admin_delete_gift():
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)
+    session.pop('admin_username', None)
     flash('Вы вышли из админ панели')
     return redirect(url_for('index'))
 
