@@ -9,47 +9,164 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(90deg, rgba(255, 182, 193, 0.95) 0%, rgba(255, 240, 245, 0.95) 100%);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid rgba(255, 182, 193, 0.3);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #d63384 !important;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: #d63384 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #b02a5b !important;
+            transform: translateY(-2px);
         }
         .card {
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(214, 51, 132, 0.15);
+            transition: all 0.4s ease;
+            background: linear-gradient(145deg, #ffffff 0%, #fff5f8 100%);
         }
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(214, 51, 132, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            background: linear-gradient(45deg, #ff6b9d, #d63384);
             border: none;
-            border-radius: 25px;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(214, 51, 132, 0.3);
         }
         .btn-primary:hover {
-            background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+            background: linear-gradient(45deg, #d63384, #b02a5b);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(214, 51, 132, 0.4);
+        }
+        .btn-outline-primary {
+            border: 2px solid #ff6b9d;
+            color: #d63384;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background: linear-gradient(45deg, #ff6b9d, #d63384);
+            border-color: #d63384;
+            color: white;
+            transform: translateY(-2px);
         }
         .flower-card img {
-            height: 250px;
+            height: 280px;
             object-fit: cover;
-            border-radius: 15px 15px 0 0;
+            border-radius: 20px 20px 0 0;
+            transition: transform 0.3s ease;
+        }
+        .flower-card:hover img {
+            transform: scale(1.05);
         }
         .price {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: bold;
-            color: #e74c3c;
+            color: #d63384;
+            text-shadow: 1px 1px 2px rgba(214, 51, 132, 0.1);
         }
         .main-content {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 245, 248, 0.95) 100%);
+            border-radius: 25px;
             margin: 20px 0;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(214, 51, 132, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .display-4 {
+            background: linear-gradient(45deg, #ff6b9d, #d63384);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+        .lead {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .alert-success {
+            background: linear-gradient(45deg, #d4edda, #c3e6cb);
+            border: none;
+            border-left: 4px solid #28a745;
+            border-radius: 15px;
+        }
+        .table {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(214, 51, 132, 0.1);
+        }
+        .table thead th {
+            background: linear-gradient(45deg, #ff6b9d, #d63384);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        .form-control {
+            border-radius: 15px;
+            border: 2px solid rgba(214, 51, 132, 0.2);
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+        }
+        .badge {
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+        .text-primary {
+            color: #d63384 !important;
+        }
+        .dropdown-menu {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(214, 51, 132, 0.15);
+        }
+        .dropdown-item:hover {
+            background: linear-gradient(45deg, #fff5f8, #ffe8ed);
+        }
+        /* Анимация для иконок */
+        .fas, .far {
+            transition: all 0.3s ease;
+        }
+        .card:hover .fas, .card:hover .far {
+            transform: scale(1.1);
+        }
+        /* Красивая прокрутка */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 182, 193, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff6b9d, #d63384);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #d63384, #b02a5b);
         }
     </style>
 </head>
