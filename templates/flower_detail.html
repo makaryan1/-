@@ -11,17 +11,112 @@
     <div class="col-md-6">
         <h1 class="mb-3">{{ flower.name }}</h1>
         <p class="lead">{{ flower.description }}</p>
-        <div class="price mb-4">{{ flower.price }} ₽</div>
+        
+        <div class="mb-4">
+            <h5>Выберите размер букета:</h5>
+            {% for variant in flower.variants %}
+            <div class="form-check mb-2">
+                <input class="form-check-input variant-radio" type="radio" 
+                       name="variant" id="variant{{ loop.index }}" 
+                       value="{{ variant.price }}" data-variant="{{ loop.index0 }}"
+                       {% if loop.first %}checked{% endif %}>
+                <label class="form-check-label" for="variant{{ loop.index }}">
+                    <strong>{{ variant.name }}</strong> - {{ variant.price }} ₽
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="price mb-4" id="selected-price">{{ flower.variants[0].price }} ₽</div>
+        
+        <div class="mb-4">
+            <label for="quantity" class="form-label">Количество букетов:</label>
+            <div class="input-group" style="width: 150px;">
+                <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(-1)">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <input type="number" class="form-control text-center" id="quantity" value="1" min="1">
+                <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(1)">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <strong>Итоговая цена: <span id="total-price">{{ flower.variants[0].price }} ₽</span></strong>
+        </div>
         
         <div class="d-grid gap-2">
-            <a href="{{ url_for('add_to_cart', flower_id=flower.id) }}" 
-               class="btn btn-primary btn-lg">
+            <button onclick="addToCartWithVariant()" class="btn btn-primary btn-lg">
                 <i class="fas fa-cart-plus"></i> Добавить в корзину
-            </a>
+            </button>
             <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Вернуться к каталогу
             </a>
         </div>
     </div>
 </div>
+
+<script>
+let selectedVariantIndex = 0;
+const variants = {{ flower.variants | tojson }};
+
+function updatePrice() {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const variantPrice = variants[selectedVariantIndex].price;
+    const totalPrice = variantPrice * quantity;
+    
+    document.getElementById('selected-price').textContent = variantPrice + ' ₽';
+    document.getElementById('total-price').textContent = totalPrice + ' ₽';
+}
+
+function changeQuantity(change) {
+    const quantityInput = document.getElementById('quantity');
+    let newQuantity = parseInt(quantityInput.value) + change;
+    if (newQuantity < 1) newQuantity = 1;
+    quantityInput.value = newQuantity;
+    updatePrice();
+}
+
+function addToCartWithVariant() {
+    const quantity = document.getElementById('quantity').value;
+    const variantIndex = selectedVariantIndex;
+    
+    fetch('/add_to_cart_variant', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: {{ flower.id }},
+            variant_index: variantIndex,
+            quantity: parseInt(quantity),
+            item_type: 'flower'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Товар добавлен в корзину!');
+        } else {
+            alert('Ошибка при добавлении товара');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const variantRadios = document.querySelectorAll('.variant-radio');
+    
+    variantRadios.forEach((radio, index) => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                selectedVariantIndex = parseInt(this.dataset.variant);
+                updatePrice();
+            }
+        });
+    });
+    
+    document.getElementById('quantity').addEventListener('input', updatePrice);
+});
+</script>
 {% endblock %}

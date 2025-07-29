@@ -94,44 +94,75 @@ FLOWERS = [
     {
         'id': 1,
         'name': 'Розы красные',
-        'price': 250,
+        'base_price': 25,
         'image': 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300',
-        'description': 'Букет из 11 красных роз'
+        'description': 'Красивые красные розы',
+        'variants': [
+            {'count': 5, 'name': 'Мини букет (5 роз)', 'price': 125},
+            {'count': 11, 'name': 'Стандарт (11 роз)', 'price': 250},
+            {'count': 21, 'name': 'Романтик (21 роза)', 'price': 475},
+            {'count': 51, 'name': 'Люкс (51 роза)', 'price': 1100}
+        ]
     },
     {
         'id': 2,
         'name': 'Тюльпаны микс',
-        'price': 180,
+        'base_price': 12,
         'image': 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=300',
-        'description': 'Разноцветные тюльпаны, 15 штук'
+        'description': 'Разноцветные тюльпаны',
+        'variants': [
+            {'count': 9, 'name': 'Мини букет (9 тюльпанов)', 'price': 108},
+            {'count': 15, 'name': 'Стандарт (15 тюльпанов)', 'price': 180},
+            {'count': 25, 'name': 'Большой (25 тюльпанов)', 'price': 300}
+        ]
     },
     {
         'id': 3,
         'name': 'Пионы белые',
-        'price': 320,
+        'base_price': 45,
         'image': 'https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=300',
-        'description': 'Нежные белые пионы, 7 штук'
+        'description': 'Нежные белые пионы',
+        'variants': [
+            {'count': 3, 'name': 'Мини букет (3 пиона)', 'price': 135},
+            {'count': 7, 'name': 'Стандарт (7 пионов)', 'price': 315},
+            {'count': 15, 'name': 'Роскошный (15 пионов)', 'price': 675}
+        ]
     },
     {
         'id': 4,
         'name': 'Герберы яркие',
-        'price': 200,
+        'base_price': 22,
         'image': 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=300',
-        'description': 'Яркий букет гербер, 9 штук'
+        'description': 'Яркий букет гербер',
+        'variants': [
+            {'count': 7, 'name': 'Мини букет (7 гербер)', 'price': 154},
+            {'count': 9, 'name': 'Стандарт (9 гербер)', 'price': 198},
+            {'count': 15, 'name': 'Большой (15 гербер)', 'price': 330}
+        ]
     },
     {
         'id': 5,
         'name': 'Лилии белые',
-        'price': 280,
+        'base_price': 56,
         'image': 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=300',
-        'description': 'Элегантные белые лилии, 5 штук'
+        'description': 'Элегантные белые лилии',
+        'variants': [
+            {'count': 3, 'name': 'Мини букет (3 лилии)', 'price': 168},
+            {'count': 5, 'name': 'Стандарт (5 лилий)', 'price': 280},
+            {'count': 9, 'name': 'Роскошный (9 лилий)', 'price': 504}
+        ]
     },
     {
         'id': 6,
         'name': 'Подсолнухи',
-        'price': 150,
+        'base_price': 21,
         'image': 'https://images.unsplash.com/photo-1597848212624-e6d4b4d4ca7a?w=300',
-        'description': 'Солнечные подсолнухи, 7 штук'
+        'description': 'Солнечные подсолнухи',
+        'variants': [
+            {'count': 5, 'name': 'Мини букет (5 подсолнухов)', 'price': 105},
+            {'count': 7, 'name': 'Стандарт (7 подсолнухов)', 'price': 147},
+            {'count': 11, 'name': 'Большой (11 подсолнухов)', 'price': 231}
+        ]
     }
 ]
 
@@ -140,30 +171,46 @@ GIFTS = [
     {
         'id': 101,
         'name': 'Коробка конфет',
-        'price': 120,
         'image': 'https://images.unsplash.com/photo-1549007953-2f2dc0b24019?w=300',
-        'description': 'Ассорти шоколадных конфет в красивой упаковке'
+        'description': 'Ассорти шоколадных конфет в красивой упаковке',
+        'variants': [
+            {'size': 'small', 'name': 'Маленькая коробка', 'price': 120},
+            {'size': 'medium', 'name': 'Средняя коробка', 'price': 200},
+            {'size': 'large', 'name': 'Большая коробка', 'price': 350}
+        ]
     },
     {
         'id': 102,
         'name': 'Мягкая игрушка мишка',
-        'price': 200,
         'image': 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300',
-        'description': 'Плюшевый мишка высотой 30 см'
+        'description': 'Плюшевый мишка',
+        'variants': [
+            {'size': '20cm', 'name': 'Мишка 20 см', 'price': 150},
+            {'size': '30cm', 'name': 'Мишка 30 см', 'price': 200},
+            {'size': '50cm', 'name': 'Мишка 50 см', 'price': 400}
+        ]
     },
     {
         'id': 103,
         'name': 'Свечи ароматические',
-        'price': 80,
         'image': 'https://images.unsplash.com/photo-1602874801006-6ad3f7ce0e14?w=300',
-        'description': 'Набор из 3 ароматических свечей'
+        'description': 'Ароматические свечи',
+        'variants': [
+            {'count': 1, 'name': '1 свеча', 'price': 30},
+            {'count': 3, 'name': 'Набор из 3 свечей', 'price': 80},
+            {'count': 5, 'name': 'Набор из 5 свечей', 'price': 120}
+        ]
     },
     {
         'id': 104,
         'name': 'Подарочная корзина',
-        'price': 350,
         'image': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300',
-        'description': 'Корзина с деликатесами и сладостями'
+        'description': 'Корзина с деликатесами и сладостями',
+        'variants': [
+            {'size': 'small', 'name': 'Мини корзина', 'price': 250},
+            {'size': 'medium', 'name': 'Стандартная корзина', 'price': 350},
+            {'size': 'large', 'name': 'Большая корзина', 'price': 500}
+        ]
     }
 ]
 
@@ -214,14 +261,47 @@ def add_to_cart(item_id):
         item = next((g for g in GIFTS if g['id'] == item_id), None)
     
     if item:
-        if str(item_id) in session['cart']:
-            session['cart'][str(item_id)] += 1
+        # Используем первый вариант по умолчанию
+        cart_key = f"{item_id}_0"
+        if cart_key in session['cart']:
+            session['cart'][cart_key] += 1
         else:
-            session['cart'][str(item_id)] = 1
+            session['cart'][cart_key] = 1
         session.modified = True
         flash(f'{item["name"]} добавлен в корзину!')
     
     return redirect(url_for('index'))
+
+@app.route('/add_to_cart_variant', methods=['POST'])
+def add_to_cart_variant():
+    from flask import jsonify
+    
+    if 'cart' not in session:
+        session['cart'] = {}
+    
+    data = request.get_json()
+    item_id = data['item_id']
+    variant_index = data['variant_index']
+    quantity = data['quantity']
+    item_type = data['item_type']
+    
+    # Ищем товар
+    item = None
+    if item_type == 'flower':
+        item = next((f for f in FLOWERS if f['id'] == item_id), None)
+    else:
+        item = next((g for g in GIFTS if g['id'] == item_id), None)
+    
+    if item and variant_index < len(item['variants']):
+        cart_key = f"{item_id}_{variant_index}"
+        if cart_key in session['cart']:
+            session['cart'][cart_key] += quantity
+        else:
+            session['cart'][cart_key] = quantity
+        session.modified = True
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False})
 
 @app.route('/cart')
 def cart():
@@ -230,44 +310,59 @@ def cart():
     user = get_user_info()
     
     if 'cart' in session:
-        for item_id, quantity in session['cart'].items():
+        for cart_key, quantity in session['cart'].items():
+            if '_' in cart_key:
+                item_id, variant_index = cart_key.split('_')
+                item_id = int(item_id)
+                variant_index = int(variant_index)
+            else:
+                # Старый формат - совместимость
+                item_id = int(cart_key)
+                variant_index = 0
+            
             # Ищем среди цветов
-            item = next((f for f in FLOWERS if f['id'] == int(item_id)), None)
+            item = next((f for f in FLOWERS if f['id'] == item_id), None)
+            item_type = 'flower'
             # Если не найден среди цветов, ищем среди подарков
             if not item:
-                item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
+                item = next((g for g in GIFTS if g['id'] == item_id), None)
+                item_type = 'gift'
             
-            if item:
-                item_total = item['price'] * quantity
+            if item and variant_index < len(item['variants']):
+                variant = item['variants'][variant_index]
+                item_total = variant['price'] * quantity
                 cart_items.append({
                     'flower': item,  # Оставляем название для совместимости с шаблоном
+                    'variant': variant,
                     'quantity': quantity,
-                    'total': item_total
+                    'total': item_total,
+                    'cart_key': cart_key,
+                    'item_type': item_type
                 })
                 total += item_total
     
     return render_template('cart.html', cart_items=cart_items, total=total, user=user)
 
-@app.route('/update_cart/<int:flower_id>/<int:quantity>')
-def update_cart(flower_id, quantity):
+@app.route('/update_cart/<cart_key>/<int:quantity>')
+def update_cart(cart_key, quantity):
     if 'cart' not in session:
         session['cart'] = {}
     
     if quantity <= 0:
-        if str(flower_id) in session['cart']:
-            del session['cart'][str(flower_id)]
+        if cart_key in session['cart']:
+            del session['cart'][cart_key]
             flash('Товар удален из корзины')
     else:
-        session['cart'][str(flower_id)] = quantity
+        session['cart'][cart_key] = quantity
         flash('Количество обновлено')
     
     session.modified = True
     return redirect(url_for('cart'))
 
-@app.route('/remove_from_cart/<int:flower_id>')
-def remove_from_cart(flower_id):
-    if 'cart' in session and str(flower_id) in session['cart']:
-        del session['cart'][str(flower_id)]
+@app.route('/remove_from_cart/<cart_key>')
+def remove_from_cart(cart_key):
+    if 'cart' in session and cart_key in session['cart']:
+        del session['cart'][cart_key]
         session.modified = True
         flash('Товар удален из корзины')
     return redirect(url_for('cart'))
