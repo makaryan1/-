@@ -79,9 +79,26 @@
                         <div class="form-text">Для городов Ахалцихе укажите улицу и номер дома для построения маршрута</div>
                     </div>
 
-                    <div id="map-link" style="display: none;" class="alert alert-info">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <a href="#" id="google-maps-link" target="_blank">Посмотреть маршрут на Google Maps</a>
+                    <div id="map-container" style="display: none;" class="mt-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong>Выберите точное место доставки на карте:</strong>
+                        </div>
+                        <div id="map" style="height: 300px; border-radius: 15px; overflow: hidden;"></div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="getCurrentLocation()">
+                                <i class="fas fa-location-arrow"></i> Моё местоположение
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="searchAddress()">
+                                <i class="fas fa-search"></i> Поиск адреса
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                Нажмите на карту чтобы выбрать точное место доставки. 
+                                Адрес будет автоматически обновлен.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -128,15 +145,116 @@
     </div>
 </div>
 
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dkmvuFiYMaplvE&libraries=places&callback=initMap" async defer></script>
+
 <script>
+let map;
+let marker;
+let geocoder;
+let placesService;
+
+function initMap() {
+    // Координаты Ахалцихе
+    const akhaltsikhe = { lat: 41.6394, lng: 42.9802 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 14,
+        center: akhaltsikhe,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+        styles: [
+            {
+                featureType: "poi",
+                elementType: "labels",
+                stylers: [{ visibility: "on" }]
+            }
+        ]
+    });
+
+    geocoder = new google.maps.Geocoder();
+    placesService = new google.maps.places.PlacesService(map);
+
+    // Создаем маркер
+    marker = new google.maps.Marker({
+        position: akhaltsikhe,
+        map: map,
+        draggable: true,
+        title: 'Место доставки'
+    });
+
+    // Обработчик клика по карте
+    map.addListener('click', function(event) {
+        updateMarkerPosition(event.latLng);
+        reverseGeocode(event.latLng);
+    });
+
+    // Обработчик перетаскивания маркера
+    marker.addListener('dragend', function(event) {
+        reverseGeocode(event.latLng);
+    });
+}
+
+function updateMarkerPosition(position) {
+    marker.setPosition(position);
+    map.panTo(position);
+}
+
+function reverseGeocode(latLng) {
+    geocoder.geocode({ location: latLng }, function(results, status) {
+        if (status === 'OK' && results[0]) {
+            const addressComponents = results[0].address_components;
+            let formattedAddress = results[0].formatted_address;
+            
+            // Убираем "Georgia" из адреса для краткости
+            formattedAddress = formattedAddress.replace(', Georgia', '');
+            
+            document.getElementById('address').value = formattedAddress;
+        }
+    });
+}
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            
+            updateMarkerPosition(pos);
+            reverseGeocode(pos);
+            map.setZoom(16);
+        }, function(error) {
+            alert('Не удалось получить ваше местоположение: ' + error.message);
+        });
+    } else {
+        alert('Геолокация не поддерживается вашим браузером');
+    }
+}
+
+function searchAddress() {
+    const searchQuery = prompt('Введите адрес для поиска:');
+    if (searchQuery) {
+        geocoder.geocode({ address: searchQuery + ', Ахалцихе, Грузия' }, function(results, status) {
+            if (status === 'OK' && results[0]) {
+                const location = results[0].geometry.location;
+                updateMarkerPosition(location);
+                reverseGeocode(location);
+                map.setZoom(16);
+            } else {
+                alert('Адрес не найден. Попробуйте другой запрос.');
+            }
+        });
+    }
+}
+
 function updateDeliveryOptions() {
     const deliveryArea = document.getElementById('delivery_area');
     const villageSelect = document.getElementById('village-select');
     const deliveryPriceSpan = document.getElementById('delivery-price');
     const totalPriceSpan = document.getElementById('total-price');
-    const mapLink = document.getElementById('map-link');
-    const googleMapsLink = document.getElementById('google-maps-link');
-    const addressField = document.getElementById('address');
+    const mapContainer = document.getElementById('map-container');
     
     const cartTotal = {{ cart_total }};
     let deliveryPrice = 0;
@@ -144,38 +262,31 @@ function updateDeliveryOptions() {
     if (deliveryArea.value === 'village') {
         villageSelect.style.display = 'block';
         deliveryPrice = 10;
-        mapLink.style.display = 'none';
+        mapContainer.style.display = 'none';
     } else if (deliveryArea.value) {
         villageSelect.style.display = 'none';
         const selectedOption = deliveryArea.options[deliveryArea.selectedIndex];
         deliveryPrice = parseInt(selectedOption.dataset.price) || 0;
         
         if (deliveryArea.value === 'akhaltsikhe') {
-            mapLink.style.display = 'block';
-            updateGoogleMapsLink();
+            mapContainer.style.display = 'block';
+            // Перезагружаем карту если она была скрыта
+            setTimeout(() => {
+                if (map) {
+                    google.maps.event.trigger(map, 'resize');
+                    map.setCenter({ lat: 41.6394, lng: 42.9802 });
+                }
+            }, 100);
         } else {
-            mapLink.style.display = 'none';
+            mapContainer.style.display = 'none';
         }
     } else {
         villageSelect.style.display = 'none';
-        mapLink.style.display = 'none';
+        mapContainer.style.display = 'none';
     }
     
     deliveryPriceSpan.textContent = deliveryPrice + ' ₾';
     totalPriceSpan.textContent = (cartTotal + deliveryPrice) + ' ₾';
-}
-
-function updateGoogleMapsLink() {
-    const addressField = document.getElementById('address');
-    const googleMapsLink = document.getElementById('google-maps-link');
-    
-    addressField.addEventListener('input', function() {
-        if (document.getElementById('delivery_area').value === 'akhaltsikhe' && this.value.trim()) {
-            const fullAddress = `Ахалцихе, ${this.value.trim()}`;
-            const mapsUrl = `https://www.google.com/maps/dir/Цветочный+рай,+Ахалцихе/${encodeURIComponent(fullAddress)}`;
-            googleMapsLink.href = mapsUrl;
-        }
-    });
 }
 
 // Инициализация при загрузке страницы
