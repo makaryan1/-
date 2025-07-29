@@ -1,0 +1,499 @@
+
+{% extends "base.html" %}
+
+{% block title %}Админ панель - Цветочный рай{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="fas fa-cogs"></i> Админ панель</h1>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-shopping-cart fa-2x me-3"></i>
+                    <div>
+                        <h4>{{ stats.total_orders }}</h4>
+                        <small>Всего заказов</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-dollar-sign fa-2x me-3"></i>
+                    <div>
+                        <h4>{{ stats.total_revenue }}₾</h4>
+                        <small>Общий доход</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users fa-2x me-3"></i>
+                    <div>
+                        <h4>{{ stats.total_users }}</h4>
+                        <small>Пользователей</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-box fa-2x me-3"></i>
+                    <div>
+                        <h4>{{ stats.total_products }}</h4>
+                        <small>Товаров</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Навигация по разделам -->
+<div class="row mb-4">
+    <div class="col-12">
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                    <i class="fas fa-shopping-cart"></i> Заказы
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="flowers-tab" data-bs-toggle="tab" data-bs-target="#flowers" type="button" role="tab">
+                    <i class="fas fa-rose"></i> Цветы
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="gifts-tab" data-bs-toggle="tab" data-bs-target="#gifts" type="button" role="tab">
+                    <i class="fas fa-gift"></i> Подарки
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                    <i class="fas fa-users"></i> Пользователи
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="tab-content" id="adminTabContent">
+    <!-- Заказы -->
+    <div class="tab-pane fade show active" id="orders" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-cart"></i> Управление заказами</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Дата</th>
+                                <th>Клиент</th>
+                                <th>Телефон</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.date }}</td>
+                                <td>{{ order.name }}</td>
+                                <td>{{ order.phone }}</td>
+                                <td>{{ order.total }}₾</td>
+                                <td>
+                                    <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, this.value)">
+                                        <option value="Новый" {% if order.status == 'Новый' %}selected{% endif %}>Новый</option>
+                                        <option value="В обработке" {% if order.status == 'В обработке' %}selected{% endif %}>В обработке</option>
+                                        <option value="Готов к доставке" {% if order.status == 'Готов к доставке' %}selected{% endif %}>Готов к доставке</option>
+                                        <option value="Доставлен" {% if order.status == 'Доставлен' %}selected{% endif %}>Доставлен</option>
+                                        <option value="Отменен" {% if order.status == 'Отменен' %}selected{% endif %}>Отменен</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewOrder({{ order.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteOrder({{ order.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Цветы -->
+    <div class="tab-pane fade" id="flowers" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-rose"></i> Управление цветами</h5>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFlowerModal">
+                    <i class="fas fa-plus"></i> Добавить цветок
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Изображение</th>
+                                <th>Название</th>
+                                <th>Описание</th>
+                                <th>Базовая цена</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flower in flowers %}
+                            <tr>
+                                <td>{{ flower.id }}</td>
+                                <td><img src="{{ flower.image }}" alt="{{ flower.name }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                                <td>{{ flower.name }}</td>
+                                <td>{{ flower.description[:50] }}...</td>
+                                <td>{{ flower.base_price }}₾</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editFlower({{ flower.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteFlower({{ flower.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подарки -->
+    <div class="tab-pane fade" id="gifts" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-gift"></i> Управление подарками</h5>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                    <i class="fas fa-plus"></i> Добавить подарок
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Изображение</th>
+                                <th>Название</th>
+                                <th>Описание</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gift in gifts %}
+                            <tr>
+                                <td>{{ gift.id }}</td>
+                                <td><img src="{{ gift.image }}" alt="{{ gift.name }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                                <td>{{ gift.name }}</td>
+                                <td>{{ gift.description[:50] }}...</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editGift({{ gift.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteGift({{ gift.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пользователи -->
+    <div class="tab-pane fade" id="users" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-users"></i> Управление пользователями</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Дата регистрации</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_id, user_data in users.items() %}
+                            <tr>
+                                <td>{{ user_id }}</td>
+                                <td>{{ user_data.name }}</td>
+                                <td>{{ user_data.email }}</td>
+                                <td>{{ user_data.get('phone', '-') }}</td>
+                                <td>{{ user_data.get('registration_date', '-') }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewUserOrders('{{ user_id }}')">
+                                        <i class="fas fa-shopping-cart"></i> Заказы
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+<!-- Модальное окно для добавления цветка -->
+<div class="modal fade" id="addFlowerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить цветок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addFlowerForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="flowerName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="flowerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="flowerImage" class="form-label">URL изображения</label>
+                        <input type="url" class="form-control" id="flowerImage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="flowerDescription" class="form-label">Описание</label>
+                        <textarea class="form-control" id="flowerDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="flowerBasePrice" class="form-label">Базовая цена</label>
+                        <input type="number" class="form-control" id="flowerBasePrice" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления подарка -->
+<div class="modal fade" id="addGiftModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить подарок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addGiftForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="giftName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="giftName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="giftImage" class="form-label">URL изображения</label>
+                        <input type="url" class="form-control" id="giftImage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="giftDescription" class="form-label">Описание</label>
+                        <textarea class="form-control" id="giftDescription" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функции для работы с заказами
+function updateOrderStatus(orderId, newStatus) {
+    fetch('/admin/update_order_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при обновлении статуса');
+        }
+    });
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Вы уверены, что хотите удалить этот заказ?')) {
+        fetch('/admin/delete_order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_id: orderId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении заказа');
+            }
+        });
+    }
+}
+
+// Функции для работы с цветами
+document.getElementById('addFlowerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('flowerName').value,
+        image: document.getElementById('flowerImage').value,
+        description: document.getElementById('flowerDescription').value,
+        base_price: parseInt(document.getElementById('flowerBasePrice').value)
+    };
+    
+    fetch('/admin/add_flower', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при добавлении цветка');
+        }
+    });
+});
+
+function deleteFlower(flowerId) {
+    if (confirm('Вы уверены, что хотите удалить этот цветок?')) {
+        fetch('/admin/delete_flower', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                flower_id: flowerId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении цветка');
+            }
+        });
+    }
+}
+
+// Функции для работы с подарками
+document.getElementById('addGiftForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('giftName').value,
+        image: document.getElementById('giftImage').value,
+        description: document.getElementById('giftDescription').value
+    };
+    
+    fetch('/admin/add_gift', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при добавлении подарка');
+        }
+    });
+});
+
+function deleteGift(giftId) {
+    if (confirm('Вы уверены, что хотите удалить этот подарок?')) {
+        fetch('/admin/delete_gift', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                gift_id: giftId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении подарка');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

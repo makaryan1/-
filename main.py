@@ -606,5 +606,240 @@ def my_orders():
     
     return render_template('my_orders.html', orders=user_orders, user=user)
 
+# Админ функции
+ADMIN_PASSWORD = "admin123"  # Измените на свой пароль
+
+def is_admin():
+    """Проверка админских прав"""
+    return session.get('is_admin', False)
+
+def save_flowers():
+    """Сохранить данные о цветах в файл"""
+    with open('flowers.json', 'w', encoding='utf-8') as f:
+        json.dump(FLOWERS, f, ensure_ascii=False, indent=2)
+
+def save_gifts():
+    """Сохранить данные о подарках в файл"""
+    with open('gifts.json', 'w', encoding='utf-8') as f:
+        json.dump(GIFTS, f, ensure_ascii=False, indent=2)
+
+def load_flowers():
+    """Загрузить данные о цветах из файла"""
+    global FLOWERS
+    if os.path.exists('flowers.json'):
+        with open('flowers.json', 'r', encoding='utf-8') as f:
+            FLOWERS = json.load(f)
+
+def load_gifts():
+    """Загрузить данные о подарках из файла"""
+    global GIFTS
+    if os.path.exists('gifts.json'):
+        with open('gifts.json', 'r', encoding='utf-8') as f:
+            GIFTS = json.load(f)
+
+# Загружаем данные при запуске
+load_flowers()
+load_gifts()
+
+def get_admin_stats():
+    """Получить статистику для админ панели"""
+    orders = load_orders()
+    users = load_users()
+    
+    total_orders = len(orders)
+    total_revenue = sum(order.get('total', 0) for order in orders)
+    total_users = len(users)
+    total_products = len(FLOWERS) + len(GIFTS)
+    
+    return {
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_users': total_users,
+        'total_products': total_products
+    }
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash('Добро пожаловать в админ панель!')
+            return redirect(url_for('admin_panel'))
+        else:
+            flash('Неверный пароль')
+    
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Админ вход</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Админ панель</h4>
+                        </div>
+                        <div class="card-body">
+                            ''' + (''.join(f'<div class="alert alert-danger">{msg}</div>' for msg in get_flashed_messages())) + '''
+                            <form method="POST">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Пароль</label>
+                                    <input type="password" class="form-control" name="password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Войти</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+
+@app.route('/admin')
+def admin_panel():
+    if not is_admin():
+        return redirect(url_for('admin_login'))
+    
+    stats = get_admin_stats()
+    orders = load_orders()
+    users = load_users()
+    
+    return render_template('admin.html', 
+                         stats=stats, 
+                         orders=orders, 
+                         flowers=FLOWERS, 
+                         gifts=GIFTS, 
+                         users=users)
+
+@app.route('/admin/update_order_status', methods=['POST'])
+def admin_update_order_status():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    order_id = data['order_id']
+    new_status = data['status']
+    
+    orders = load_orders()
+    for order in orders:
+        if order['id'] == order_id:
+            order['status'] = new_status
+            break
+    
+    with open('orders.json', 'w', encoding='utf-8') as f:
+        json.dump(orders, f, ensure_ascii=False, indent=2)
+    
+    return {'success': True}
+
+@app.route('/admin/delete_order', methods=['POST'])
+def admin_delete_order():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    order_id = data['order_id']
+    
+    orders = load_orders()
+    orders = [order for order in orders if order['id'] != order_id]
+    
+    with open('orders.json', 'w', encoding='utf-8') as f:
+        json.dump(orders, f, ensure_ascii=False, indent=2)
+    
+    return {'success': True}
+
+@app.route('/admin/add_flower', methods=['POST'])
+def admin_add_flower():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    
+    # Найти максимальный ID и добавить 1
+    max_id = max([f['id'] for f in FLOWERS]) if FLOWERS else 0
+    new_flower = {
+        'id': max_id + 1,
+        'name': data['name'],
+        'base_price': data['base_price'],
+        'image': data['image'],
+        'description': data['description'],
+        'variants': [
+            {'count': 5, 'name': f'Мини букет (5 {data["name"].lower()})', 'price': data['base_price'] * 5},
+            {'count': 11, 'name': f'Стандарт (11 {data["name"].lower()})', 'price': data['base_price'] * 10},
+            {'count': 21, 'name': f'Большой (21 {data["name"].lower()})', 'price': data['base_price'] * 19}
+        ]
+    }
+    
+    FLOWERS.append(new_flower)
+    save_flowers()
+    
+    return {'success': True}
+
+@app.route('/admin/delete_flower', methods=['POST'])
+def admin_delete_flower():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    flower_id = data['flower_id']
+    
+    global FLOWERS
+    FLOWERS = [f for f in FLOWERS if f['id'] != flower_id]
+    save_flowers()
+    
+    return {'success': True}
+
+@app.route('/admin/add_gift', methods=['POST'])
+def admin_add_gift():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    
+    # Найти максимальный ID и добавить 1
+    max_id = max([g['id'] for g in GIFTS]) if GIFTS else 100
+    new_gift = {
+        'id': max_id + 1,
+        'name': data['name'],
+        'image': data['image'],
+        'description': data['description'],
+        'variants': [
+            {'size': 'small', 'name': f'Маленький {data["name"].lower()}', 'price': 100},
+            {'size': 'medium', 'name': f'Средний {data["name"].lower()}', 'price': 200},
+            {'size': 'large', 'name': f'Большой {data["name"].lower()}', 'price': 350}
+        ]
+    }
+    
+    GIFTS.append(new_gift)
+    save_gifts()
+    
+    return {'success': True}
+
+@app.route('/admin/delete_gift', methods=['POST'])
+def admin_delete_gift():
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    gift_id = data['gift_id']
+    
+    global GIFTS
+    GIFTS = [g for g in GIFTS if g['id'] != gift_id]
+    save_gifts()
+    
+    return {'success': True}
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    flash('Вы вышли из админ панели')
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
