@@ -135,6 +135,38 @@ FLOWERS = [
     }
 ]
 
+# Данные о подарках
+GIFTS = [
+    {
+        'id': 101,
+        'name': 'Коробка конфет',
+        'price': 120,
+        'image': 'https://images.unsplash.com/photo-1549007953-2f2dc0b24019?w=300',
+        'description': 'Ассорти шоколадных конфет в красивой упаковке'
+    },
+    {
+        'id': 102,
+        'name': 'Мягкая игрушка мишка',
+        'price': 200,
+        'image': 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300',
+        'description': 'Плюшевый мишка высотой 30 см'
+    },
+    {
+        'id': 103,
+        'name': 'Свечи ароматические',
+        'price': 80,
+        'image': 'https://images.unsplash.com/photo-1602874801006-6ad3f7ce0e14?w=300',
+        'description': 'Набор из 3 ароматических свечей'
+    },
+    {
+        'id': 104,
+        'name': 'Подарочная корзина',
+        'price': 350,
+        'image': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300',
+        'description': 'Корзина с деликатесами и сладостями'
+    }
+]
+
 def load_orders():
     if os.path.exists('orders.json'):
         with open('orders.json', 'r', encoding='utf-8') as f:
@@ -150,7 +182,7 @@ def save_order(order):
 @app.route('/')
 def index():
     user = get_user_info()
-    return render_template('index.html', flowers=FLOWERS, user=user)
+    return render_template('index.html', flowers=FLOWERS, gifts=GIFTS, user=user)
 
 @app.route('/flower/<int:flower_id>')
 def flower_detail(flower_id):
@@ -161,19 +193,24 @@ def flower_detail(flower_id):
     user = get_user_info()
     return render_template('flower_detail.html', flower=flower, user=user)
 
-@app.route('/add_to_cart/<int:flower_id>')
-def add_to_cart(flower_id):
+@app.route('/add_to_cart/<int:item_id>')
+def add_to_cart(item_id):
     if 'cart' not in session:
         session['cart'] = {}
     
-    flower = next((f for f in FLOWERS if f['id'] == flower_id), None)
-    if flower:
-        if str(flower_id) in session['cart']:
-            session['cart'][str(flower_id)] += 1
+    # Ищем среди цветов
+    item = next((f for f in FLOWERS if f['id'] == item_id), None)
+    # Если не найден среди цветов, ищем среди подарков
+    if not item:
+        item = next((g for g in GIFTS if g['id'] == item_id), None)
+    
+    if item:
+        if str(item_id) in session['cart']:
+            session['cart'][str(item_id)] += 1
         else:
-            session['cart'][str(flower_id)] = 1
+            session['cart'][str(item_id)] = 1
         session.modified = True
-        flash(f'{flower["name"]} добавлен в корзину!')
+        flash(f'{item["name"]} добавлен в корзину!')
     
     return redirect(url_for('index'))
 
@@ -184,12 +221,17 @@ def cart():
     user = get_user_info()
     
     if 'cart' in session:
-        for flower_id, quantity in session['cart'].items():
-            flower = next((f for f in FLOWERS if f['id'] == int(flower_id)), None)
-            if flower:
-                item_total = flower['price'] * quantity
+        for item_id, quantity in session['cart'].items():
+            # Ищем среди цветов
+            item = next((f for f in FLOWERS if f['id'] == int(item_id)), None)
+            # Если не найден среди цветов, ищем среди подарков
+            if not item:
+                item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
+            
+            if item:
+                item_total = item['price'] * quantity
                 cart_items.append({
-                    'flower': flower,
+                    'flower': item,  # Оставляем название для совместимости с шаблоном
                     'quantity': quantity,
                     'total': item_total
                 })
@@ -243,8 +285,16 @@ def checkout():
         
         delivery_price = get_delivery_price(delivery_area, village)
         
-        cart_total = sum(next((f['price'] for f in FLOWERS if f['id'] == int(fid)), 0) * qty 
-                        for fid, qty in session['cart'].items())
+        cart_total = 0
+        for fid, qty in session['cart'].items():
+            # Ищем среди цветов
+            item = next((f for f in FLOWERS if f['id'] == int(fid)), None)
+            # Если не найден среди цветов, ищем среди подарков
+            if not item:
+                item = next((g for g in GIFTS if g['id'] == int(fid)), None)
+            
+            if item:
+                cart_total += item['price'] * qty
         
         order = {
             'id': len(load_orders()) + 1,
@@ -272,12 +322,17 @@ def checkout():
     cart_items = []
     cart_total = 0
     
-    for flower_id, quantity in session['cart'].items():
-        flower = next((f for f in FLOWERS if f['id'] == int(flower_id)), None)
-        if flower:
-            item_total = flower['price'] * quantity
+    for item_id, quantity in session['cart'].items():
+        # Ищем среди цветов
+        item = next((f for f in FLOWERS if f['id'] == int(item_id)), None)
+        # Если не найден среди цветов, ищем среди подарков
+        if not item:
+            item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
+        
+        if item:
+            item_total = item['price'] * quantity
             cart_items.append({
-                'flower': flower,
+                'flower': item,  # Оставляем название для совместимости с шаблоном
                 'quantity': quantity,
                 'total': item_total
             })
@@ -431,13 +486,18 @@ def my_orders():
     # Добавляем детали товаров к заказам
     for order in user_orders:
         order['items_details'] = []
-        for flower_id, quantity in order['items'].items():
-            flower = next((f for f in FLOWERS if f['id'] == int(flower_id)), None)
-            if flower:
+        for item_id, quantity in order['items'].items():
+            # Ищем среди цветов
+            item = next((f for f in FLOWERS if f['id'] == int(item_id)), None)
+            # Если не найден среди цветов, ищем среди подарков
+            if not item:
+                item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
+            
+            if item:
                 order['items_details'].append({
-                    'flower': flower,
+                    'flower': item,  # Оставляем название для совместимости с шаблоном
                     'quantity': quantity,
-                    'total': flower['price'] * quantity
+                    'total': item['price'] * quantity
                 })
     
     return render_template('my_orders.html', orders=user_orders, user=user)

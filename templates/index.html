@@ -9,30 +9,65 @@
     <p class="lead">Самые свежие и красивые цветы для особых моментов</p>
 </div>
 
-<div class="row">
-    {% for flower in flowers %}
-    <div class="col-md-4 mb-4">
-        <div class="card flower-card h-100">
-            <img src="{{ flower.image }}" class="card-img-top" alt="{{ flower.name }}">
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ flower.name }}</h5>
-                <p class="card-text">{{ flower.description }}</p>
-                <div class="mt-auto">
-                    <div class="price mb-3">{{ flower.price }} ₽</div>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('flower_detail', flower_id=flower.id) }}" 
-                           class="btn btn-outline-primary">
-                            <i class="fas fa-eye"></i> Подробнее
-                        </a>
-                        <a href="{{ url_for('add_to_cart', flower_id=flower.id) }}" 
-                           class="btn btn-primary">
-                            <i class="fas fa-cart-plus"></i> В корзину
-                        </a>
+<!-- Категория цветов -->
+<div class="mb-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-rose text-pink"></i> Цветы
+    </h2>
+    <div class="row">
+        {% for flower in flowers %}
+        <div class="col-md-4 mb-4">
+            <div class="card flower-card h-100">
+                <img src="{{ flower.image }}" class="card-img-top" alt="{{ flower.name }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ flower.name }}</h5>
+                    <p class="card-text">{{ flower.description }}</p>
+                    <div class="mt-auto">
+                        <div class="price mb-3">{{ flower.price }} ₽</div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('flower_detail', flower_id=flower.id) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                            <a href="{{ url_for('add_to_cart', item_id=flower.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-cart-plus"></i> В корзину
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+</div>
+
+<!-- Категория подарков -->
+<div class="mb-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-gift text-warning"></i> Подарки
+    </h2>
+    <div class="row">
+        {% for gift in gifts %}
+        <div class="col-md-4 mb-4">
+            <div class="card flower-card h-100">
+                <img src="{{ gift.image }}" class="card-img-top" alt="{{ gift.name }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ gift.name }}</h5>
+                    <p class="card-text">{{ gift.description }}</p>
+                    <div class="mt-auto">
+                        <div class="price mb-3">{{ gift.price }} ₽</div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('add_to_cart', item_id=gift.id) }}" 
+                               class="btn btn-warning">
+                                <i class="fas fa-cart-plus"></i> В корзину
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
