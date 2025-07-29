@@ -158,7 +158,8 @@ def flower_detail(flower_id):
     if not flower:
         flash('Товар не найден')
         return redirect(url_for('index'))
-    return render_template('flower_detail.html', flower=flower)
+    user = get_user_info()
+    return render_template('flower_detail.html', flower=flower, user=user)
 
 @app.route('/add_to_cart/<int:flower_id>')
 def add_to_cart(flower_id):
@@ -291,7 +292,8 @@ def checkout():
 
 @app.route('/order_success/<int:order_id>')
 def order_success(order_id):
-    return render_template('order_success.html', order_id=order_id)
+    user = get_user_info()
+    return render_template('order_success.html', order_id=order_id, user=user)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -340,7 +342,8 @@ def register():
         flash('Регистрация прошла успешно!')
         return redirect(url_for('index'))
     
-    return render_template('register.html')
+    user = get_user_info()
+    return render_template('register.html', user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -362,9 +365,11 @@ def login():
                 return redirect(url_for('index'))
         
         flash('Неверный email или пароль')
-        return render_template('login.html')
+        user = get_user_info()
+        return render_template('login.html', user=user)
     
-    return render_template('login.html')
+    user = get_user_info()
+    return render_template('login.html', user=user)
 
 @app.route('/logout')
 def logout():
