@@ -70,10 +70,28 @@
                     {% endif %}
                 </a>
                 {% if user %}
-                    <span class="nav-link">
-                        <i class="fas fa-user"></i> {{ user.name }}
-                    </span>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% if user.is_local %}
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user-edit"></i> Профиль</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('my_orders') }}"><i class="fas fa-list"></i> Мои заказы</a></li>
+                            {% if user.is_local %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 {% else %}
+                    <a class="nav-link" href="{{ url_for('login') }}">
+                        <i class="fas fa-sign-in-alt"></i> Вход
+                    </a>
+                    <a class="nav-link" href="{{ url_for('register') }}">
+                        <i class="fas fa-user-plus"></i> Регистрация
+                    </a>
                     <div class="nav-link">
                         <div id="replit-auth"></div>
                     </div>

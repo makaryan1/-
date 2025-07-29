@@ -3,15 +3,54 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import json
 import os
 from datetime import datetime
+import hashlib
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 
+def load_users():
+    if os.path.exists('users.json'):
+        with open('users.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open('users.json', 'w', encoding='utf-8') as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def get_user_info():
-    """Get user info from Replit Auth headers"""
+    """Get user info from session or Replit Auth headers"""
+    # Проверяем сначала сессию (локальная регистрация)
+    if 'user_id' in session:
+        users = load_users()
+        user_id = session['user_id']
+        if user_id in users:
+            return {
+                'id': user_id,
+                'name': users[user_id]['name'],
+                'email': users[user_id]['email'],
+                'phone': users[user_id].get('phone', ''),
+                'address': users[user_id].get('address', ''),
+                'is_local': True
+            }
+    
+    # Если нет локального пользователя, проверяем Replit Auth
     user_id = request.headers.get('X-Replit-User-Id')
     user_name = request.headers.get('X-Replit-User-Name') 
-    return {'id': user_id, 'name': user_name} if user_id else None
+    if user_id:
+        return {
+            'id': f'replit_{user_id}',
+            'name': user_name,
+            'email': '',
+            'phone': '',
+            'address': '',
+            'is_local': False
+        }
+    
+    return None
 
 # Данные о цветах
 FLOWERS = [
@@ -192,6 +231,150 @@ def checkout():
 @app.route('/order_success/<int:order_id>')
 def order_success(order_id):
     return render_template('order_success.html', order_id=order_id)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        phone = request.form.get('phone', '')
+        address = request.form.get('address', '')
+        
+        # Проверка данных
+        if not all([name, email, password]):
+            flash('Пожалуйста, заполните все обязательные поля')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('Пароли не совпадают')
+            return render_template('register.html')
+        
+        if len(password) < 6:
+            flash('Пароль должен содержать минимум 6 символов')
+            return render_template('register.html')
+        
+        users = load_users()
+        
+        # Проверка на существующий email
+        for user_data in users.values():
+            if user_data['email'] == email:
+                flash('Пользователь с таким email уже существует')
+                return render_template('register.html')
+        
+        # Создание нового пользователя
+        user_id = str(len(users) + 1)
+        users[user_id] = {
+            'name': name,
+            'email': email,
+            'password': hash_password(password),
+            'phone': phone,
+            'address': address,
+            'registration_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        save_users(users)
+        session['user_id'] = user_id
+        flash('Регистрация прошла успешно!')
+        return redirect(url_for('index'))
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        if not all([email, password]):
+            flash('Пожалуйста, заполните все поля')
+            return render_template('login.html')
+        
+        users = load_users()
+        
+        # Поиск пользователя по email
+        for user_id, user_data in users.items():
+            if user_data['email'] == email and user_data['password'] == hash_password(password):
+                session['user_id'] = user_id
+                flash(f'Добро пожаловать, {user_data["name"]}!')
+                return redirect(url_for('index'))
+        
+        flash('Неверный email или пароль')
+        return render_template('login.html')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Вы вышли из системы')
+    return redirect(url_for('index'))
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    user = get_user_info()
+    if not user:
+        flash('Необходимо войти в систему')
+        return redirect(url_for('login'))
+    
+    if not user.get('is_local', False):
+        flash('Профиль доступен только для зарегистрированных пользователей')
+        return redirect(url_for('register'))
+    
+    if request.method == 'POST':
+        users = load_users()
+        user_id = session['user_id']
+        
+        users[user_id]['name'] = request.form['name']
+        users[user_id]['phone'] = request.form['phone']
+        users[user_id]['address'] = request.form['address']
+        
+        # Изменение пароля (если указан)
+        new_password = request.form.get('new_password')
+        if new_password:
+            if len(new_password) < 6:
+                flash('Пароль должен содержать минимум 6 символов')
+                return render_template('profile.html', user=user)
+            users[user_id]['password'] = hash_password(new_password)
+        
+        save_users(users)
+        flash('Профиль обновлен успешно!')
+        return redirect(url_for('profile'))
+    
+    return render_template('profile.html', user=user)
+
+@app.route('/my_orders')
+def my_orders():
+    user = get_user_info()
+    if not user:
+        flash('Необходимо войти в систему')
+        return redirect(url_for('login'))
+    
+    orders = load_orders()
+    user_orders = []
+    
+    for order in orders:
+        # Для локальных пользователей проверяем user_id
+        if user.get('is_local') and order.get('user_id') == session.get('user_id'):
+            user_orders.append(order)
+        # Для Replit пользователей проверяем имя
+        elif not user.get('is_local') and order.get('user_name') == user['name']:
+            user_orders.append(order)
+    
+    # Добавляем детали товаров к заказам
+    for order in user_orders:
+        order['items_details'] = []
+        for flower_id, quantity in order['items'].items():
+            flower = next((f for f in FLOWERS if f['id'] == int(flower_id)), None)
+            if flower:
+                order['items_details'].append({
+                    'flower': flower,
+                    'quantity': quantity,
+                    'total': flower['price'] * quantity
+                })
+    
+    return render_template('my_orders.html', orders=user_orders, user=user)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}
+
+{% block title %}Вход - Цветочный рай{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-sign-in-alt"></i> Вход в систему</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+                </div>
+                
+                <hr>
+                <div class="text-center">
+                    <p class="mb-2">Или войдите через Replit:</p>
+                    <script authed="location.reload()" src="https://auth.util.repl.co/script.js"></script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

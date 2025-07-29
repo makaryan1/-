@@ -34,16 +34,18 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Телефон *</label>
-                            <input type="tel" class="form-control" name="phone" required>
+                            <input type="tel" class="form-control" name="phone" 
+                                   value="{% if user %}{{ user.phone }}{% endif %}" required>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email">
+                        <input type="email" class="form-control" name="email"
+                               value="{% if user %}{{ user.email }}{% endif %}">
                     </div>
                     <div class="mb-3">
                         <label for="address" class="form-label">Адрес доставки *</label>
-                        <textarea class="form-control" name="address" rows="3" required></textarea>
+                        <textarea class="form-control" name="address" rows="3" required>{% if user %}{{ user.address }}{% endif %}</textarea>
                     </div>
                 </div>
             </div>
