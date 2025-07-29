@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "user_id": "1",
+    "user_name": "Hayk Makaryan",
+    "name": "Hayk Makaryan",
+    "phone": "595333527",
+    "email": "albertmakaryan60@gmail.com",
+    "address": "Tsira (წირა), Aspindza Municipality, Damala Village, Yerevan VI Lane, N 3",
+    "delivery_area": "village",
+    "village": "Tsira (წირა)",
+    "items": {
+      "2": 1
+    },
+    "cart_total": 180,
+    "delivery_price": 10,
+    "total": 190,
+    "date": "2025-07-29 15:11:51",
+    "status": "Новый"
+  },
+  {
+    "id": 2,
+    "user_id": "1",
+    "user_name": "Hayk Makaryan",
+    "name": "Hayk Makaryan",
+    "phone": "595333527",
+    "email": "albertmakaryan60@gmail.com",
+    "address": "Аспиндза, Aspindza Municipality, Damala Village, Yerevan VI Lane, N 3",
+    "delivery_area": "aspindza",
+    "village": "",
+    "items": {
+      "3": 1
+    },
+    "cart_total": 320,
+    "delivery_price": 20,
+    "total": 340,
+    "date": "2025-07-29 15:13:34",
+    "status": "Новый"
+  }
+]
