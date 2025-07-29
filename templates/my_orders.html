@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Мои заказы - Цветочный рай{% endblock %}
@@ -42,9 +41,34 @@
                     </div>
                 </div>
                 <hr>
-                <div class="d-flex justify-content-between align-items-center">
-                    <strong>Итого: {{ order.total }} ₽</strong>
+                {% if order.cart_total %}
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Товары:</span>
+                        <span>{{ order.cart_total }} ₾</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Доставка:</span>
+                        <span>{{ order.delivery_price }} ₾</span>
+                    </div>
+                    <hr>
+                {% endif %}
+                <strong>Итого: {{ order.total }} ₾</strong>
+            </div>
+            <div class="col-md-4">
+                <h6>Контактная информация:</h6>
+                <p><strong>Имя:</strong> {{ order.name }}</p>
+                <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                {% if order.email %}<p><strong>Email:</strong> {{ order.email }}</p>{% endif %}
+                <p><strong>Адрес:</strong> {{ order.address }}</p>
+
+                {% if order.delivery_area == 'akhaltsikhe' %}
+                <div class="mt-2">
+                    <a href="https://www.google.com/maps/dir/Цветочный+рай,+Ахалцихе/{{ order.address | urlencode }}" 
+                       target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-map-marker-alt"></i> Маршрут на карте
+                    </a>
                 </div>
+                {% endif %}
             </div>
         </div>
     {% endfor %}

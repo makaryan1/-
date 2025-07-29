@@ -20,8 +20,8 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form method="POST">
-            <div class="card">
+        <form method="POST" id="checkout-form">
+            <div class="card mb-3">
                 <div class="card-header">
                     <h5><i class="fas fa-user"></i> Контактная информация</h5>
                 </div>
@@ -43,9 +43,45 @@
                         <input type="email" class="form-control" name="email"
                                value="{% if user %}{{ user.email }}{% endif %}">
                     </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-truck"></i> Доставка</h5>
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
-                        <label for="address" class="form-label">Адрес доставки *</label>
-                        <textarea class="form-control" name="address" rows="3" required>{% if user %}{{ user.address }}{% endif %}</textarea>
+                        <label for="delivery_area" class="form-label">Выберите область доставки *</label>
+                        <select class="form-control" name="delivery_area" id="delivery_area" required onchange="updateDeliveryOptions()">
+                            <option value="">Выберите область...</option>
+                            {% for key, area in delivery_areas.items() %}
+                                <option value="{{ key }}" data-price="{{ area.price }}">{{ area.name }} - {{ area.price }} ₾</option>
+                            {% endfor %}
+                            <option value="village" data-price="10">Деревни около Ахалцихе - 10 ₾</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="village-select" style="display: none;">
+                        <label for="village" class="form-label">Выберите деревню *</label>
+                        <select class="form-control" name="village" id="village">
+                            <option value="">Выберите деревню...</option>
+                            {% for village in villages %}
+                                <option value="{{ village }}">{{ village }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Точный адрес *</label>
+                        <textarea class="form-control" name="address" id="address" rows="3" required 
+                                  placeholder="Укажите точный адрес для доставки">{% if user %}{{ user.address }}{% endif %}</textarea>
+                        <div class="form-text">Для городов Ахалцихе укажите улицу и номер дома для построения маршрута</div>
+                    </div>
+
+                    <div id="map-link" style="display: none;" class="alert alert-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <a href="#" id="google-maps-link" target="_blank">Посмотреть маршрут на Google Maps</a>
                     </div>
                 </div>
             </div>
@@ -70,16 +106,81 @@
                 {% for item in cart_items %}
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{ item.flower.name }} x{{ item.quantity }}</span>
-                    <span>{{ item.total }} ₽</span>
+                    <span>{{ item.total }} ₾</span>
                 </div>
                 {% endfor %}
                 <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Товары:</span>
+                    <span>{{ cart_total }} ₾</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Доставка:</span>
+                    <span id="delivery-price">0 ₾</span>
+                </div>
+                <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Итого:</span>
-                    <span class="text-primary">{{ total }} ₽</span>
+                    <span class="text-primary" id="total-price">{{ cart_total }} ₾</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function updateDeliveryOptions() {
+    const deliveryArea = document.getElementById('delivery_area');
+    const villageSelect = document.getElementById('village-select');
+    const deliveryPriceSpan = document.getElementById('delivery-price');
+    const totalPriceSpan = document.getElementById('total-price');
+    const mapLink = document.getElementById('map-link');
+    const googleMapsLink = document.getElementById('google-maps-link');
+    const addressField = document.getElementById('address');
+    
+    const cartTotal = {{ cart_total }};
+    let deliveryPrice = 0;
+    
+    if (deliveryArea.value === 'village') {
+        villageSelect.style.display = 'block';
+        deliveryPrice = 10;
+        mapLink.style.display = 'none';
+    } else if (deliveryArea.value) {
+        villageSelect.style.display = 'none';
+        const selectedOption = deliveryArea.options[deliveryArea.selectedIndex];
+        deliveryPrice = parseInt(selectedOption.dataset.price) || 0;
+        
+        if (deliveryArea.value === 'akhaltsikhe') {
+            mapLink.style.display = 'block';
+            updateGoogleMapsLink();
+        } else {
+            mapLink.style.display = 'none';
+        }
+    } else {
+        villageSelect.style.display = 'none';
+        mapLink.style.display = 'none';
+    }
+    
+    deliveryPriceSpan.textContent = deliveryPrice + ' ₾';
+    totalPriceSpan.textContent = (cartTotal + deliveryPrice) + ' ₾';
+}
+
+function updateGoogleMapsLink() {
+    const addressField = document.getElementById('address');
+    const googleMapsLink = document.getElementById('google-maps-link');
+    
+    addressField.addEventListener('input', function() {
+        if (document.getElementById('delivery_area').value === 'akhaltsikhe' && this.value.trim()) {
+            const fullAddress = `Ахалцихе, ${this.value.trim()}`;
+            const mapsUrl = `https://www.google.com/maps/dir/Цветочный+рай,+Ахалцихе/${encodeURIComponent(fullAddress)}`;
+            googleMapsLink.href = mapsUrl;
+        }
+    });
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    updateDeliveryOptions();
+});
+</script>
 {% endblock %}

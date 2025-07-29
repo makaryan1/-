@@ -8,6 +8,43 @@ import hashlib
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 
+# Данные о доставке
+DELIVERY_AREAS = {
+    'akhaltsikhe': {
+        'name': 'Ахалцихе',
+        'price': 5,
+        'type': 'city'
+    },
+    'aspindza': {
+        'name': 'Аспиндза',
+        'price': 20,
+        'type': 'city'
+    }
+}
+
+VILLAGES = [
+    'Abatkhevi (აბათხევი)', 'Agara (აგარა)', 'Anda (ანდა)', 'Andriatsminda (ანდრიაწმინდა)',
+    'Ani (ანი)', 'Atsquri (აჭურა)', 'Boga (ბოგა)', 'Chacharaki (ჭაჭარაქი)',
+    'Chvinta (ჭვინთა)', 'Didi Pamaji (დიდი პამაჯი)', 'Eliatsminda (ელიაწმინდა)', 'Ghreli (ღრელი)',
+    'Giorgitsminda (გიორგიწმინდა)', 'Gurkeli (გურკელი)', 'Ivlita (ივლიტა)', 'Julgha (ჯულღა)',
+    'Khaki (ხაკი)', 'Kheoti (ხეოთი)', 'Klde (კლდე)', 'Mikeltsminda (მიქელწმინდა)',
+    'Minadze (მინაძე)', 'Mugareti (მუგარეთი)', 'Muskhi (მუსხი)', 'Naokhrebi (ნაოხრები)',
+    'Orali (ორალი)', 'Patara Pamaji (პატარა პამაჯი)', 'Persa (ფერსა)', 'Qulalisi (ყულალისი)',
+    'Sadzeli (საძელი)', 'Saquneti (საყუნეთი)', 'Shurdo (შურდო)', 'Skhvilisi (სხვილისი)',
+    'Sviri (სვირი)', 'Tatanisi (ტატანისი)', 'Tiseli (თისელი)', 'Tqemlana (ტყემლანა)',
+    'Tsinubani (წინუბანი)', 'Tsira (წირა)', 'Tsnisi (წნისი)', 'Tsqaltbila (წყალთბილა)',
+    'Tsqordza (წყორძა)', 'Tsqruti (წყრუთი)', 'Uraveli (ურაველი)', 'Zemo Skhvilisi (ზემო სხვილისი)',
+    'Zikilia (ზიკილია)'
+]
+
+def get_delivery_price(delivery_area, village=None):
+    """Получить стоимость доставки"""
+    if delivery_area in DELIVERY_AREAS:
+        return DELIVERY_AREAS[delivery_area]['price']
+    elif delivery_area == 'village' and village:
+        return 10  # Цена для деревень
+    return 0
+
 def load_users():
     if os.path.exists('users.json'):
         with open('users.json', 'r', encoding='utf-8') as f:
@@ -192,6 +229,22 @@ def checkout():
     user = get_user_info()
     
     if request.method == 'POST':
+        delivery_area = request.form['delivery_area']
+        village = request.form.get('village', '')
+        address = request.form['address']
+        
+        # Формируем полный адрес
+        full_address = address
+        if delivery_area == 'village' and village:
+            full_address = f"{village}, {address}"
+        elif delivery_area in DELIVERY_AREAS:
+            full_address = f"{DELIVERY_AREAS[delivery_area]['name']}, {address}"
+        
+        delivery_price = get_delivery_price(delivery_area, village)
+        
+        cart_total = sum(next((f['price'] for f in FLOWERS if f['id'] == int(fid)), 0) * qty 
+                        for fid, qty in session['cart'].items())
+        
         order = {
             'id': len(load_orders()) + 1,
             'user_id': user['id'] if user else None,
@@ -199,10 +252,13 @@ def checkout():
             'name': request.form['name'],
             'phone': request.form['phone'],
             'email': request.form['email'],
-            'address': request.form['address'],
+            'address': full_address,
+            'delivery_area': delivery_area,
+            'village': village,
             'items': session['cart'],
-            'total': sum(next((f['price'] for f in FLOWERS if f['id'] == int(fid)), 0) * qty 
-                        for fid, qty in session['cart'].items()),
+            'cart_total': cart_total,
+            'delivery_price': delivery_price,
+            'total': cart_total + delivery_price,
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'status': 'Новый'
         }
@@ -213,7 +269,7 @@ def checkout():
         return redirect(url_for('order_success', order_id=order['id']))
     
     cart_items = []
-    total = 0
+    cart_total = 0
     
     for flower_id, quantity in session['cart'].items():
         flower = next((f for f in FLOWERS if f['id'] == int(flower_id)), None)
@@ -224,9 +280,14 @@ def checkout():
                 'quantity': quantity,
                 'total': item_total
             })
-            total += item_total
+            cart_total += item_total
     
-    return render_template('checkout.html', cart_items=cart_items, total=total, user=user)
+    return render_template('checkout.html', 
+                         cart_items=cart_items, 
+                         cart_total=cart_total, 
+                         user=user,
+                         delivery_areas=DELIVERY_AREAS,
+                         villages=VILLAGES)
 
 @app.route('/order_success/<int:order_id>')
 def order_success(order_id):
