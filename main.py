@@ -7,6 +7,12 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 
+def get_user_info():
+    """Get user info from Replit Auth headers"""
+    user_id = request.headers.get('X-Replit-User-Id')
+    user_name = request.headers.get('X-Replit-User-Name') 
+    return {'id': user_id, 'name': user_name} if user_id else None
+
 # Данные о цветах
 FLOWERS = [
     {
@@ -67,7 +73,8 @@ def save_order(order):
 
 @app.route('/')
 def index():
-    return render_template('index.html', flowers=FLOWERS)
+    user = get_user_info()
+    return render_template('index.html', flowers=FLOWERS, user=user)
 
 @app.route('/flower/<int:flower_id>')
 def flower_detail(flower_id):
@@ -97,6 +104,7 @@ def add_to_cart(flower_id):
 def cart():
     cart_items = []
     total = 0
+    user = get_user_info()
     
     if 'cart' in session:
         for flower_id, quantity in session['cart'].items():
@@ -110,7 +118,23 @@ def cart():
                 })
                 total += item_total
     
-    return render_template('cart.html', cart_items=cart_items, total=total)
+    return render_template('cart.html', cart_items=cart_items, total=total, user=user)
+
+@app.route('/update_cart/<int:flower_id>/<int:quantity>')
+def update_cart(flower_id, quantity):
+    if 'cart' not in session:
+        session['cart'] = {}
+    
+    if quantity <= 0:
+        if str(flower_id) in session['cart']:
+            del session['cart'][str(flower_id)]
+            flash('Товар удален из корзины')
+    else:
+        session['cart'][str(flower_id)] = quantity
+        flash('Количество обновлено')
+    
+    session.modified = True
+    return redirect(url_for('cart'))
 
 @app.route('/remove_from_cart/<int:flower_id>')
 def remove_from_cart(flower_id):
@@ -126,9 +150,13 @@ def checkout():
         flash('Корзина пуста')
         return redirect(url_for('index'))
     
+    user = get_user_info()
+    
     if request.method == 'POST':
         order = {
             'id': len(load_orders()) + 1,
+            'user_id': user['id'] if user else None,
+            'user_name': user['name'] if user else None,
             'name': request.form['name'],
             'phone': request.form['phone'],
             'email': request.form['email'],
@@ -159,7 +187,7 @@ def checkout():
             })
             total += item_total
     
-    return render_template('checkout.html', cart_items=cart_items, total=total)
+    return render_template('checkout.html', cart_items=cart_items, total=total, user=user)
 
 @app.route('/order_success/<int:order_id>')
 def order_success(order_id):
