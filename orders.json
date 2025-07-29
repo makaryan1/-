@@ -36,5 +36,24 @@
     "total": 340,
     "date": "2025-07-29 15:13:34",
     "status": "Новый"
+  },
+  {
+    "id": 3,
+    "user_id": "1",
+    "user_name": "Hayk Makaryan",
+    "name": "Hayk Makaryan",
+    "phone": "595333527",
+    "email": "albertmakaryan60@gmail.com",
+    "address": "Giorgitsminda (გიორგიწმინდა), Aspindza Municipality, Damala Village, Yerevan VI Lane, N 3",
+    "delivery_area": "village",
+    "village": "Giorgitsminda (გიორგიწმინდა)",
+    "items": {
+      "3": 1
+    },
+    "cart_total": 320,
+    "delivery_price": 10,
+    "total": 330,
+    "date": "2025-07-29 15:23:41",
+    "status": "Новый"
   }
 ]
