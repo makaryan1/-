@@ -390,15 +390,24 @@ def checkout():
         delivery_price = get_delivery_price(delivery_area, village)
         
         cart_total = 0
-        for fid, qty in session['cart'].items():
+        for cart_key, qty in session['cart'].items():
+            if '_' in cart_key:
+                item_id, variant_index = cart_key.split('_')
+                item_id = int(item_id)
+                variant_index = int(variant_index)
+            else:
+                item_id = int(cart_key)
+                variant_index = 0
+            
             # Ищем среди цветов
-            item = next((f for f in FLOWERS if f['id'] == int(fid)), None)
+            item = next((f for f in FLOWERS if f['id'] == item_id), None)
             # Если не найден среди цветов, ищем среди подарков
             if not item:
-                item = next((g for g in GIFTS if g['id'] == int(fid)), None)
+                item = next((g for g in GIFTS if g['id'] == item_id), None)
             
-            if item:
-                cart_total += item['price'] * qty
+            if item and variant_index < len(item['variants']):
+                variant = item['variants'][variant_index]
+                cart_total += variant['price'] * qty
         
         order = {
             'id': len(load_orders()) + 1,
@@ -426,21 +435,31 @@ def checkout():
     cart_items = []
     cart_total = 0
     
-    for item_id, quantity in session['cart'].items():
+    for cart_key, quantity in session['cart'].items():
+        if '_' in cart_key:
+            item_id, variant_index = cart_key.split('_')
+            item_id = int(item_id)
+            variant_index = int(variant_index)
+        else:
+            item_id = int(cart_key)
+            variant_index = 0
+        
         # Ищем среди цветов
-        item = next((f for f in FLOWERS if f['id'] == int(item_id)), None)
+        item = next((f for f in FLOWERS if f['id'] == item_id), None)
         # Если не найден среди цветов, ищем среди подарков
         if not item:
-            item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
+            item = next((g for g in GIFTS if g['id'] == item_id), None)
         
-        if item:
-            item_total = item['price'] * quantity
+        if item and variant_index < len(item['variants']):
+            variant = item['variants'][variant_index]
+            item_total = variant['price'] * quantity
             cart_items.append({
                 'flower': item,  # Оставляем название для совместимости с шаблоном
+                'variant': variant,
                 'quantity': quantity,
                 'total': item_total
             })
-            cart_total += item_total
+            cart_total += item_total</cart_total>
     
     return render_template('checkout.html', 
                          cart_items=cart_items, 

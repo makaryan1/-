@@ -34,20 +34,20 @@
                     <td>
                         <div class="input-group" style="width: 120px;">
                             <button class="btn btn-outline-secondary btn-sm" type="button" 
-                                    onclick="updateQuantity('{{ item.key }}', {{ item.quantity - 1 }})">
+                                    onclick="updateQuantity('{{ item.cart_key }}', {{ item.quantity - 1 }})">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="text" class="form-control form-control-sm text-center" 
                                    value="{{ item.quantity }}" readonly>
                             <button class="btn btn-outline-secondary btn-sm" type="button" 
-                                    onclick="updateQuantity('{{ item.key }}', {{ item.quantity + 1 }})">
+                                    onclick="updateQuantity('{{ item.cart_key }}', {{ item.quantity + 1 }})">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     </td>
                     <td class="fw-bold">{{ item.total }} ₽</td>
                     <td>
-                        <a href="{{ url_for('remove_from_cart', cart_key=item.key) }}" 
+                        <a href="{{ url_for('remove_from_cart', cart_key=item.cart_key) }}" 
                            class="btn btn-sm btn-outline-danger" 
                            onclick="return confirm('Удалить товар из корзины?')">
                             <i class="fas fa-trash"></i>
