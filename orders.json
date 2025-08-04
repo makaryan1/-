@@ -94,5 +94,28 @@
     "total": 140,
     "date": "2025-08-04 19:43:09",
     "status": "Новый"
+  },
+  {
+    "id": 6,
+    "user_id": "2",
+    "user_name": "Hayk Makaryan",
+    "name": "Hayk Makaryan",
+    "phone": "595333527",
+    "email": "amakaryan234@gmail.com",
+    "address": "Аспиндза, Aspindza Municipality, Damala Village, Yerevan VI Lane, N 3",
+    "delivery_area": "aspindza",
+    "village": "",
+    "payment_method": "card",
+    "payment_status": "paid",
+    "payment_id": "df75704d-d418-47af-bc25-37e8734dae65",
+    "payment_message": "Оплачено картой",
+    "items": {
+      "3_0": 1
+    },
+    "cart_total": 135,
+    "delivery_price": 20,
+    "total": 155,
+    "date": "2025-08-04 19:53:52",
+    "status": "Новый"
   }
 ]
