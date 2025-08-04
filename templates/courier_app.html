@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курьер - Цветочный рай</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="fas fa-truck"></i> Курьер
+            </span>
+            <span class="navbar-text">Активные доставки</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            {% for order in orders %}
+            {% if order.status in ['Готов к доставке', 'В пути'] %}
+            <div class="col-md-6 mb-4">
+                <div class="card 
+                    {% if order.payment_status == 'paid' %}border-success
+                    {% elif order.payment_status == 'cash_on_delivery' %}border-warning
+                    {% elif order.payment_status == 'failed' %}border-danger
+                    {% endif %}">
+                    
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Заказ #{{ order.id }}</h6>
+                        <div>
+                            <!-- Статус оплаты для курьера -->
+                            {% if order.payment_status == 'paid' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> ОПЛАЧЕНО
+                                </span>
+                            {% elif order.payment_status == 'cash_on_delivery' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-money-bill-wave"></i> ВЗЯТЬ {{ order.total }}₾
+                                </span>
+                            {% elif order.payment_status == 'failed' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> ВЗЯТЬ {{ order.total }}₾
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Клиент:</strong><br>
+                                {{ order.name }}<br>
+                                <a href="tel:{{ order.phone }}" class="btn btn-sm btn-outline-primary mt-1">
+                                    <i class="fas fa-phone"></i> {{ order.phone }}
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <strong>Сумма:</strong> {{ order.total }}₾<br>
+                                {% if order.payment_status == 'paid' %}
+                                    <div class="alert alert-success py-1 px-2 mt-1">
+                                        <small><i class="fas fa-info-circle"></i> Заказ уже оплачен</small>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning py-1 px-2 mt-1">
+                                        <small><i class="fas fa-exclamation-triangle"></i> Нужно взять {{ order.total }}₾</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-2">
+                        
+                        <div class="mb-2">
+                            <strong>Адрес:</strong><br>
+                            {{ order.address }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="https://www.google.com/maps/dir/Цветочный+рай,+Ахалцихе/{{ order.address | urlencode }}" 
+                               target="_blank" class="btn btn-primary btn-sm">
+                                <i class="fas fa-map-marker-alt"></i> Построить маршрут
+                            </a>
+                            
+                            {% if order.status == 'Готов к доставке' %}
+                                <button class="btn btn-warning btn-sm" onclick="updateOrderStatus({{ order.id }}, 'В пути')">
+                                    <i class="fas fa-truck"></i> Начать доставку
+                                </button>
+                            {% elif order.status == 'В пути' %}
+                                <button class="btn btn-success btn-sm" onclick="completeDelivery({{ order.id }})">
+                                    <i class="fas fa-check"></i> Доставлено
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        
+        {% if not orders or not orders|selectattr('status', 'in', ['Готов к доставке', 'В пути'])|list %}
+        <div class="text-center mt-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h4>Нет активных доставок</h4>
+            <p class="text-muted">Все заказы доставлены</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateOrderStatus(orderId, newStatus) {
+            fetch('/admin/update_order_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при обновлении статуса');
+                }
+            });
+        }
+
+        function completeDelivery(orderId) {
+            if (confirm('Подтвердить доставку заказа?')) {
+                updateOrderStatus(orderId, 'Доставлен');
+            }
+        }
+
+        // Автообновление каждые 30 секунд
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

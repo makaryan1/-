@@ -15,8 +15,33 @@
                     <i class="fas fa-shopping-bag"></i> Заказ #{{ order.id }}
                 </h5>
                 <div>
-                    <span class="badge bg-info">{{ order.status }}</span>
-                    <small class="text-muted ms-2">{{ order.date }}</small>
+                    <!-- Статус оплаты -->
+                    {% if order.payment_status == 'paid' %}
+                        <span class="badge bg-success me-2">
+                            <i class="fas fa-credit-card"></i> Оплачено
+                        </span>
+                    {% elif order.payment_status == 'cash_on_delivery' %}
+                        <span class="badge bg-warning me-2">
+                            <i class="fas fa-money-bill-wave"></i> Оплата курьеру
+                        </span>
+                    {% elif order.payment_status == 'failed' %}
+                        <span class="badge bg-danger me-2">
+                            <i class="fas fa-exclamation-triangle"></i> Ошибка оплаты
+                        </span>
+                    {% endif %}
+
+                    <!-- Статус заказа -->
+                    {% if order.status == 'Новый' %}
+                        <span class="badge bg-primary">{{ order.status }}</span>
+                    {% elif order.status == 'В обработке' %}
+                        <span class="badge bg-info">{{ order.status }}</span>
+                    {% elif order.status == 'Готов к доставке' %}
+                        <span class="badge bg-warning">{{ order.status }}</span>
+                    {% elif order.status == 'Доставлен' %}
+                        <span class="badge bg-success">{{ order.status }}</span>
+                    {% elif order.status == 'Отменен' %}
+                        <span class="badge bg-danger">{{ order.status }}</span>
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body">
@@ -41,18 +66,37 @@
                     </div>
                 </div>
                 <hr>
-                {% if order.cart_total %}
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Товары:</span>
-                        <span>{{ order.cart_total }} ₾</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Доставка:</span>
-                        <span>{{ order.delivery_price }} ₾</span>
-                    </div>
-                    <hr>
-                {% endif %}
-                <strong>Итого: {{ order.total }} ₾</strong>
+                <div class="row">
+                <div class="col-md-6">
+                    <strong>Дата:</strong> {{ order.date }}<br>
+                    <strong>Сумма заказа:</strong> {{ order.cart_total }} ₾<br>
+                    <strong>Доставка:</strong> {{ order.delivery_price }} ₾<br>
+                    <strong>Итого:</strong> {{ order.total }} ₾<br>
+                    <strong>Способ оплаты:</strong> 
+                    {% if order.payment_method == 'cash' %}
+                        Наличными курьеру
+                    {% else %}
+                        Банковской картой
+                    {% endif %}
+                    <br>
+                    <strong>Статус оплаты:</strong> 
+                    <span class="
+                        {% if order.payment_status == 'paid' %}text-success
+                        {% elif order.payment_status == 'cash_on_delivery' %}text-warning
+                        {% elif order.payment_status == 'failed' %}text-danger
+                        {% else %}text-muted{% endif %}">
+                        {{ order.payment_message or 'Не указано' }}
+                    </span>
+
+                    {% if order.payment_status == 'failed' and order.payment_method == 'card' %}
+                        <br>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-primary" onclick="retryPayment({{ order.id }})">
+                                <i class="fas fa-redo"></i> Повторить оплату
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
             <div class="col-md-4">
                 <h6>Контактная информация:</h6>
@@ -82,4 +126,26 @@
         </a>
     </div>
 {% endif %}
+
+<script>
+function retryPayment(orderId) {
+    if (confirm('Повторить попытку оплаты?')) {
+        fetch('/retry_payment/' + orderId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Платеж успешно обработан!');
+                location.reload();
+            } else {
+                alert('Ошибка оплаты: ' + data.message);
+            }
+        });
+    }
+}
+</script>
 {% endblock %}

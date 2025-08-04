@@ -4,6 +4,8 @@ import json
 import os
 from datetime import datetime
 import hashlib
+import requests
+import uuid
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
@@ -44,6 +46,38 @@ def get_delivery_price(delivery_area, village=None):
     elif delivery_area == 'village' and village:
         return 10  # Цена для деревень
     return 0
+
+def process_card_payment(amount, payment_method, customer_info):
+    """Обработка платежа банковской картой"""
+    try:
+        # Симуляция API банка (в реальном проекте здесь будет настоящий API)
+        payment_id = str(uuid.uuid4())
+        
+        # Для демонстрации делаем случайный успех/неудачу
+        import random
+        success = random.choice([True, True, True, False])  # 75% успеха
+        
+        if success:
+            return {
+                'success': True,
+                'payment_id': payment_id,
+                'status': 'paid',
+                'message': 'Платеж успешно обработан'
+            }
+        else:
+            return {
+                'success': False,
+                'payment_id': payment_id,
+                'status': 'failed',
+                'message': 'Ошибка при обработке платежа. Попробуйте еще раз.'
+            }
+    except Exception as e:
+        return {
+            'success': False,
+            'payment_id': None,
+            'status': 'error',
+            'message': f'Техническая ошибка: {str(e)}'
+        }
 
 def load_users():
     if os.path.exists('users.json'):
@@ -410,6 +444,42 @@ def checkout():
                 variant = item['variants'][variant_index]
                 cart_total += variant['price'] * qty
         
+        # Обработка платежа
+        payment_status = 'pending'
+        payment_id = None
+        payment_message = 'Ожидает оплаты'
+        
+        if payment_method == 'card':
+            # Автоматическая обработка платежа картой
+            payment_result = process_card_payment(
+                cart_total + delivery_price,
+                payment_method,
+                {
+                    'name': request.form['name'],
+                    'phone': request.form['phone'],
+                    'email': request.form['email']
+                }
+            )
+            
+            if payment_result['success']:
+                payment_status = 'paid'
+                payment_message = 'Оплачено картой'
+                payment_id = payment_result['payment_id']
+            else:
+                payment_status = 'failed'
+                payment_message = payment_result['message']
+                flash(f'Ошибка оплаты: {payment_result["message"]}')
+                return render_template('checkout.html', 
+                                     cart_items=cart_items, 
+                                     cart_total=cart_total, 
+                                     user=user,
+                                     delivery_areas=DELIVERY_AREAS,
+                                     villages=VILLAGES,
+                                     payment_error=payment_result['message'])
+        else:
+            payment_status = 'cash_on_delivery'
+            payment_message = 'Оплата наличными курьеру'
+
         order = {
             'id': len(load_orders()) + 1,
             'user_id': user['id'] if user else None,
@@ -421,6 +491,9 @@ def checkout():
             'delivery_area': delivery_area,
             'village': village,
             'payment_method': payment_method,
+            'payment_status': payment_status,
+            'payment_id': payment_id,
+            'payment_message': payment_message,
             'items': session['cart'],
             'cart_total': cart_total,
             'delivery_price': delivery_price,
@@ -830,6 +903,55 @@ def admin_delete_gift():
     save_gifts()
     
     return {'success': True}
+
+@app.route('/retry_payment/<int:order_id>', methods=['POST'])
+def retry_payment(order_id):
+    """Повторная попытка оплаты"""
+    orders = load_orders()
+    order = next((o for o in orders if o['id'] == order_id), None)
+    
+    if not order:
+        return {'success': False, 'message': 'Заказ не найден'}
+    
+    if order['payment_method'] != 'card':
+        return {'success': False, 'message': 'Повтор доступен только для картных платежей'}
+    
+    # Повторная обработка платежа
+    payment_result = process_card_payment(
+        order['total'],
+        order['payment_method'],
+        {
+            'name': order['name'],
+            'phone': order['phone'],
+            'email': order['email']
+        }
+    )
+    
+    # Обновляем статус заказа
+    for i, o in enumerate(orders):
+        if o['id'] == order_id:
+            if payment_result['success']:
+                orders[i]['payment_status'] = 'paid'
+                orders[i]['payment_message'] = 'Оплачено картой'
+                orders[i]['payment_id'] = payment_result['payment_id']
+            else:
+                orders[i]['payment_status'] = 'failed'
+                orders[i]['payment_message'] = payment_result['message']
+            break
+    
+    # Сохраняем обновленные заказы
+    with open('orders.json', 'w', encoding='utf-8') as f:
+        json.dump(orders, f, ensure_ascii=False, indent=2)
+    
+    return payment_result
+
+@app.route('/courier')
+def courier_app():
+    """Интерфейс для курьеров"""
+    orders = load_orders()
+    # Показываем только заказы готовые к доставке или в пути
+    active_orders = [o for o in orders if o['status'] in ['Готов к доставке', 'В пути']]
+    return render_template('courier_app.html', orders=active_orders)
 
 @app.route('/admin/logout')
 def admin_logout():

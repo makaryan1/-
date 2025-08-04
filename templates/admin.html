@@ -121,6 +121,7 @@
                                 <th>Клиент</th>
                                 <th>Телефон</th>
                                 <th>Сумма</th>
+                                <th>Оплата</th>
                                 <th>Статус</th>
                                 <th>Действия</th>
                             </tr>
@@ -134,6 +135,27 @@
                                 <td>{{ order.phone }}</td>
                                 <td>{{ order.total }}₾</td>
                                 <td>
+                                    {% if order.payment_status == 'paid' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-credit-card"></i> Оплачено
+                                        </span>
+                                    {% elif order.payment_status == 'cash_on_delivery' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-money-bill-wave"></i> Наличные курьеру
+                                        </span>
+                                    {% elif order.payment_status == 'failed' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> Ошибка оплаты
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-clock"></i> Ожидает
+                                        </span>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted">{{ order.payment_message or 'Не указано' }}</small>
+                                </td>
+                                <td>
                                     <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, this.value)">
                                         <option value="Новый" {% if order.status == 'Новый' %}selected{% endif %}>Новый</option>
                                         <option value="В обработке" {% if order.status == 'В обработке' %}selected{% endif %}>В обработке</option>
@@ -146,6 +168,11 @@
                                     <button class="btn btn-sm btn-info" onclick="viewOrder({{ order.id }})">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    {% if order.payment_status == 'failed' and order.payment_method == 'card' %}
+                                        <button class="btn btn-sm btn-warning" onclick="retryPayment({{ order.id }})">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    {% endif %}
                                     <button class="btn btn-sm btn-danger" onclick="deleteOrder({{ order.id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -501,6 +528,26 @@ function deleteGift(giftId) {
                 location.reload();
             } else {
                 alert('Ошибка при удалении подарка');
+            }
+        });
+    }
+}
+
+function retryPayment(orderId) {
+    if (confirm('Повторить попытку оплаты?')) {
+        fetch('/retry_payment/' + orderId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Платеж успешно обработан!');
+                location.reload();
+            } else {
+                alert('Ошибка оплаты: ' + data.message);
             }
         });
     }
