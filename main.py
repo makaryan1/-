@@ -379,6 +379,7 @@ def checkout():
         delivery_area = request.form['delivery_area']
         village = request.form.get('village', '')
         address = request.form['address']
+        payment_method = request.form['payment_method']
         
         # Формируем полный адрес
         full_address = address
@@ -419,6 +420,7 @@ def checkout():
             'address': full_address,
             'delivery_area': delivery_area,
             'village': village,
+            'payment_method': payment_method,
             'items': session['cart'],
             'cart_total': cart_total,
             'delivery_price': delivery_price,

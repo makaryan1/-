@@ -102,6 +102,73 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-credit-card"></i> Способ оплаты</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" 
+                                       id="payment_cash" value="cash" checked>
+                                <label class="form-check-label" for="payment_cash">
+                                    <i class="fas fa-money-bill-wave text-success"></i>
+                                    <strong>Наличными курьеру</strong>
+                                    <br>
+                                    <small class="text-muted">Оплата при получении заказа</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" 
+                                       id="payment_card" value="card">
+                                <label class="form-check-label" for="payment_card">
+                                    <i class="fas fa-credit-card text-primary"></i>
+                                    <strong>Банковской картой</strong>
+                                    <br>
+                                    <small class="text-muted">TBC Bank, Liberty Bank, Georgia Bank</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="card-payment-info" style="display: none;" class="mt-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Оплата картой:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Принимаем карты TBC Bank, Liberty Bank, Georgia Bank</li>
+                                <li>После оформления заказа мы свяжемся с вами для проведения оплаты</li>
+                                <li>Оплата через защищенные банковские системы</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center p-2 border rounded bg-light">
+                                    <i class="fas fa-university text-primary fa-2x mb-2"></i>
+                                    <div><strong>TBC Bank</strong></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-2 border rounded bg-light">
+                                    <i class="fas fa-university text-success fa-2x mb-2"></i>
+                                    <div><strong>Liberty Bank</strong></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-2 border rounded bg-light">
+                                    <i class="fas fa-university text-warning fa-2x mb-2"></i>
+                                    <div><strong>Georgia Bank</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
                 <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary">
@@ -139,6 +206,13 @@
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Итого:</span>
                     <span class="text-primary" id="total-price">{{ cart_total }} ₾</span>
+                </div>
+                <hr>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Способ оплаты будет указан при оформлении заказа
+                    </small>
                 </div>
             </div>
         </div>
@@ -289,9 +363,27 @@ function updateDeliveryOptions() {
     totalPriceSpan.textContent = (cartTotal + deliveryPrice) + ' ₾';
 }
 
-// Инициализация при загрузке страницы
+// Обработка изменения способа оплаты
 document.addEventListener('DOMContentLoaded', function() {
     updateDeliveryOptions();
+    
+    const paymentCash = document.getElementById('payment_cash');
+    const paymentCard = document.getElementById('payment_card');
+    const cardPaymentInfo = document.getElementById('card-payment-info');
+    
+    function togglePaymentInfo() {
+        if (paymentCard.checked) {
+            cardPaymentInfo.style.display = 'block';
+        } else {
+            cardPaymentInfo.style.display = 'none';
+        }
+    }
+    
+    paymentCash.addEventListener('change', togglePaymentInfo);
+    paymentCard.addEventListener('change', togglePaymentInfo);
+    
+    // Инициализация состояния
+    togglePaymentInfo();
 });
 </script>
 {% endblock %}
