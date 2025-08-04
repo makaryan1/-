@@ -459,7 +459,7 @@ def checkout():
                 'quantity': quantity,
                 'total': item_total
             })
-            cart_total += item_total</cart_total>
+            cart_total += item_total
     
     return render_template('checkout.html', 
                          cart_items=cart_items, 
