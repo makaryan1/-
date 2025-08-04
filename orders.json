@@ -55,5 +55,24 @@
     "total": 330,
     "date": "2025-07-29 15:23:41",
     "status": "Новый"
+  },
+  {
+    "id": 4,
+    "user_id": "2",
+    "user_name": "Hayk Makaryan",
+    "name": "Hayk Makaryan",
+    "phone": "595333527",
+    "email": "amakaryan234@gmail.com",
+    "address": "Ахалцихе, Aspindza Municipality, Damala Village, Yerevan VI Lane, N 3",
+    "delivery_area": "akhaltsikhe",
+    "village": "",
+    "items": {
+      "2_0": 3
+    },
+    "cart_total": 324,
+    "delivery_price": 5,
+    "total": 329,
+    "date": "2025-08-04 19:19:29",
+    "status": "Новый"
   }
 ]
