@@ -119,6 +119,18 @@ def hash_password(password):
 
 def get_user_info():
     """Get user info from session or Replit Auth headers"""
+    # Проверяем системных пользователей (админ/курьер)
+    if 'user_role' in session and 'admin_username' in session:
+        return {
+            'id': session['admin_username'],
+            'name': session['admin_username'],
+            'email': session['admin_username'],
+            'phone': '',
+            'address': '',
+            'is_local': True,
+            'role': session['user_role']
+        }
+    
     # Проверяем сначала сессию (локальная регистрация)
     if 'user_id' in session:
         users = load_users()
@@ -636,9 +648,22 @@ def login():
             flash('Пожалуйста, заполните все поля')
             return render_template('login.html')
         
+        # Проверяем системных пользователей (админ/курьер)
+        if email in USER_ROLES and USER_ROLES[email]['password'] == password:
+            user_role = USER_ROLES[email]['role']
+            session['user_role'] = user_role
+            session['admin_username'] = email
+            
+            if user_role == 'admin':
+                flash(f'Добро пожаловать в админ панель, {email}!')
+                return redirect(url_for('admin_panel'))
+            elif user_role == 'courier':
+                flash(f'Добро пожаловать в панель курьера, {email}!')
+                return redirect(url_for('courier_panel'))
+        
         users = load_users()
         
-        # Поиск пользователя по email
+        # Поиск обычного пользователя по email
         for user_id, user_data in users.items():
             if user_data['email'] == email and user_data['password'] == hash_password(password):
                 session['user_id'] = user_id
@@ -655,6 +680,9 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    session.pop('user_role', None)
+    session.pop('admin_username', None)
+    session.pop('courier_username', None)
     flash('Вы вышли из системы')
     return redirect(url_for('index'))
 

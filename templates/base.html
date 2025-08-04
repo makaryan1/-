@@ -186,21 +186,42 @@
                     {% endif %}
                 </a>
                 {% if user %}
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> {{ user.name }}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> 
+                            {% if user.get('role') == 'admin' %}
+                                <span class="badge bg-dark">Админ</span> {{ user.name }}
+                            {% elif user.get('role') == 'courier' %}
+                                <span class="badge bg-warning">Курьер</span> {{ user.name }}
+                            {% else %}
+                                {{ user.name }}
+                            {% endif %}
                         </a>
                         <ul class="dropdown-menu">
-                            {% if user.is_local %}
-                                <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user-edit"></i> Профиль</a></li>
+                            {% if user.get('role') == 'admin' %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin_panel') }}">
+                                <i class="fas fa-shield-alt"></i> Админ панель
+                            </a></li>
+                            {% elif user.get('role') == 'courier' %}
+                            <li><a class="dropdown-item" href="{{ url_for('courier_panel') }}">
+                                <i class="fas fa-truck"></i> Панель курьера
+                            </a></li>
+                            {% else %}
+                                {% if user.is_local %}
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">
+                                    <i class="fas fa-user-edit"></i> Профиль
+                                </a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{{ url_for('my_orders') }}">
+                                    <i class="fas fa-list"></i> Мои заказы
+                                </a></li>
                             {% endif %}
-                            <li><a class="dropdown-item" href="{{ url_for('my_orders') }}"><i class="fas fa-list"></i> Мои заказы</a></li>
-                            {% if user.is_local %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
-                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </a></li>
                         </ul>
-                    </div>
+                    </li>
                 {% else %}
                     <a class="nav-link" href="{{ url_for('login') }}">
                         <i class="fas fa-sign-in-alt"></i> Вход
