@@ -47,29 +47,54 @@ def get_delivery_price(delivery_area, village=None):
         return 10  # Цена для деревень
     return 0
 
-def process_card_payment(amount, payment_method, customer_info):
+def process_card_payment(amount, payment_method, customer_info, bank_id=None):
     """Обработка платежа банковской картой"""
     try:
-        # Симуляция API банка (в реальном проекте здесь будет настоящий API)
+        # Находим выбранный банк
+        selected_bank = None
+        if bank_id:
+            selected_bank = next((bank for bank in AVAILABLE_BANKS if bank['id'] == bank_id), None)
+        
+        if not selected_bank:
+            selected_bank = AVAILABLE_BANKS[0]  # По умолчанию первый банк
+        
+        # Рассчитываем комиссию банка
+        processing_fee = (amount * selected_bank['processing_fee']) / 100
+        total_amount = amount + processing_fee
+        
         payment_id = str(uuid.uuid4())
         
-        # Для демонстрации делаем случайный успех/неудачу
+        # Симуляция API банка (в реальном проекте здесь будет настоящий API)
         import random
-        success = random.choice([True, True, True, False])  # 75% успеха
+        
+        # Разные банки имеют разную вероятность успеха для демонстрации
+        success_rates = {
+            'tbc_bank': 0.85,
+            'bank_of_georgia': 0.90,
+            'liberty_bank': 0.80,
+            'procredit_bank': 0.75
+        }
+        
+        success_rate = success_rates.get(selected_bank['id'], 0.80)
+        success = random.random() < success_rate
         
         if success:
             return {
                 'success': True,
                 'payment_id': payment_id,
                 'status': 'paid',
-                'message': 'Платеж успешно обработан'
+                'message': f'Платеж успешно обработан через {selected_bank["name"]}',
+                'bank_name': selected_bank['name'],
+                'processing_fee': processing_fee,
+                'total_amount': total_amount
             }
         else:
             return {
                 'success': False,
                 'payment_id': payment_id,
                 'status': 'failed',
-                'message': 'Ошибка при обработке платежа. Попробуйте еще раз.'
+                'message': f'Ошибка при обработке платежа через {selected_bank["name"]}. Попробуйте другой банк.',
+                'bank_name': selected_bank['name']
             }
     except Exception as e:
         return {
@@ -448,6 +473,7 @@ def checkout():
         payment_status = 'pending'
         payment_id = None
         payment_message = 'Ожидает оплаты'
+        selected_bank = request.form.get('selected_bank')
         
         if payment_method == 'card':
             # Автоматическая обработка платежа картой
@@ -458,7 +484,8 @@ def checkout():
                     'name': request.form['name'],
                     'phone': request.form['phone'],
                     'email': request.form['email']
-                }
+                },
+                selected_bank
             )
             
             if payment_result['success']:
@@ -541,7 +568,8 @@ def checkout():
                          cart_total=cart_total, 
                          user=user,
                          delivery_areas=DELIVERY_AREAS,
-                         villages=VILLAGES)
+                         villages=VILLAGES,
+                         available_banks=AVAILABLE_BANKS)
 
 @app.route('/order_success/<int:order_id>')
 def order_success(order_id):
@@ -700,15 +728,52 @@ def my_orders():
     
     return render_template('my_orders.html', orders=user_orders, user=user)
 
-# Админ функции
-ADMIN_CREDENTIALS = {
-    "admin@example.com": "admin123",  # email: пароль
-    "manager@example.com": "manager456"  # можно добавить несколько админов
+# Роли пользователей
+USER_ROLES = {
+    "admin@flowershop.com": {"password": "admin123", "role": "admin"},
+    "courier@flowershop.com": {"password": "courier123", "role": "courier"},
+    "manager@flowershop.com": {"password": "manager456", "role": "admin"}
 }
+
+# Доступные банки для оплаты
+AVAILABLE_BANKS = [
+    {
+        'id': 'tbc_bank',
+        'name': 'TBC Bank',
+        'logo': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=50&fit=crop',
+        'processing_fee': 2.5  # процент комиссии
+    },
+    {
+        'id': 'bank_of_georgia',
+        'name': 'Bank of Georgia',
+        'logo': 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=50&fit=crop',
+        'processing_fee': 2.0
+    },
+    {
+        'id': 'liberty_bank',
+        'name': 'Liberty Bank',
+        'logo': 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=50&fit=crop',
+        'processing_fee': 2.2
+    },
+    {
+        'id': 'procredit_bank',
+        'name': 'ProCredit Bank',
+        'logo': 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=100&h=50&fit=crop',
+        'processing_fee': 2.8
+    }
+]
+
+def get_user_role():
+    """Получить роль текущего пользователя"""
+    return session.get('user_role', None)
 
 def is_admin():
     """Проверка админских прав"""
-    return session.get('is_admin', False)
+    return session.get('user_role') == 'admin'
+
+def is_courier():
+    """Проверка прав курьера"""
+    return session.get('user_role') == 'courier'
 
 def save_flowers():
     """Сохранить данные о цветах в файл"""
@@ -761,15 +826,41 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
         
-        if username in ADMIN_CREDENTIALS and ADMIN_CREDENTIALS[username] == password:
-            session['is_admin'] = True
+        if username in USER_ROLES and USER_ROLES[username]['password'] == password:
+            user_role = USER_ROLES[username]['role']
+            session['user_role'] = user_role
             session['admin_username'] = username
-            flash(f'Добро пожаловать в админ панель, {username}!')
-            return redirect(url_for('admin_panel'))
+            
+            if user_role == 'admin':
+                flash(f'Добро пожаловать в админ панель, {username}!')
+                return redirect(url_for('admin_panel'))
+            elif user_role == 'courier':
+                flash(f'Добро пожаловать в панель курьера, {username}!')
+                return redirect(url_for('courier_panel'))
         else:
             flash('Неверный логин или пароль')
     
     return render_template('admin_login.html')
+
+@app.route('/courier_login', methods=['GET', 'POST'])
+def courier_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        if username in USER_ROLES and USER_ROLES[username]['password'] == password:
+            user_role = USER_ROLES[username]['role']
+            if user_role == 'courier':
+                session['user_role'] = user_role
+                session['courier_username'] = username
+                flash(f'Добро пожаловать, курьер {username}!')
+                return redirect(url_for('courier_panel'))
+            else:
+                flash('У вас нет прав курьера')
+        else:
+            flash('Неверный логин или пароль')
+    
+    return render_template('courier_login.html')
 
 @app.route('/admin')
 def admin_panel():
@@ -786,6 +877,17 @@ def admin_panel():
                          flowers=FLOWERS, 
                          gifts=GIFTS, 
                          users=users)
+
+@app.route('/courier_panel')
+def courier_panel():
+    if not is_courier() and not is_admin():
+        return redirect(url_for('courier_login'))
+    
+    orders = load_orders()
+    # Показываем заказы для доставки
+    active_orders = [o for o in orders if o['status'] in ['Готов к доставке', 'В пути', 'Новый']]
+    
+    return render_template('courier_panel.html', orders=active_orders)
 
 @app.route('/admin/update_order_status', methods=['POST'])
 def admin_update_order_status():
@@ -947,17 +1049,44 @@ def retry_payment(order_id):
 
 @app.route('/courier')
 def courier_app():
-    """Интерфейс для курьеров"""
+    """Публичный интерфейс для курьеров"""
+    return render_template('courier_public.html')
+
+@app.route('/courier/update_status', methods=['POST'])
+def courier_update_status():
+    """Обновление статуса заказа курьером"""
+    if not is_courier() and not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    data = request.get_json()
+    order_id = data['order_id']
+    new_status = data['status']
+    
     orders = load_orders()
-    # Показываем только заказы готовые к доставке или в пути
-    active_orders = [o for o in orders if o['status'] in ['Готов к доставке', 'В пути']]
-    return render_template('courier_app.html', orders=active_orders)
+    for order in orders:
+        if order['id'] == order_id:
+            order['status'] = new_status
+            if new_status == 'Доставлен':
+                order['delivery_date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            break
+    
+    with open('orders.json', 'w', encoding='utf-8') as f:
+        json.dump(orders, f, ensure_ascii=False, indent=2)
+    
+    return {'success': True}
 
 @app.route('/admin/logout')
 def admin_logout():
-    session.pop('is_admin', None)
+    session.pop('user_role', None)
     session.pop('admin_username', None)
     flash('Вы вышли из админ панели')
+    return redirect(url_for('index'))
+
+@app.route('/courier/logout')
+def courier_logout():
+    session.pop('user_role', None)
+    session.pop('courier_username', None)
+    flash('Вы вышли из панели курьера')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

@@ -1,0 +1,170 @@
+
+{% extends "base.html" %}
+
+{% block title %}Панель курьера - Цветочный рай{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-truck text-warning"></i> Панель курьера</h2>
+    <div>
+        <span class="badge bg-warning text-dark me-2">
+            <i class="fas fa-user"></i> {{ session.courier_username or session.admin_username }}
+        </span>
+        <a href="{{ url_for('courier_logout') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-sign-out-alt"></i> Выйти
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>Новые заказы</h6>
+                        <h3>{{ orders|selectattr('status', 'equalto', 'Новый')|list|length }}</h3>
+                    </div>
+                    <i class="fas fa-plus-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>К доставке</h6>
+                        <h3>{{ orders|selectattr('status', 'equalto', 'Готов к доставке')|list|length }}</h3>
+                    </div>
+                    <i class="fas fa-truck fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>В пути</h6>
+                        <h3>{{ orders|selectattr('status', 'equalto', 'В пути')|list|length }}</h3>
+                    </div>
+                    <i class="fas fa-shipping-fast fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>Доставлено</h6>
+                        <h3>{{ orders|selectattr('status', 'equalto', 'Доставлен')|list|length }}</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Заказы для доставки</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Клиент</th>
+                        <th>Адрес</th>
+                        <th>Телефон</th>
+                        <th>Сумма</th>
+                        <th>Оплата</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.name }}</td>
+                        <td>{{ order.address }}</td>
+                        <td>{{ order.phone }}</td>
+                        <td>{{ order.total }} ₾</td>
+                        <td>
+                            <span class="badge 
+                                {% if order.payment_status == 'paid' %}bg-success
+                                {% elif order.payment_status == 'cash_on_delivery' %}bg-warning
+                                {% elif order.payment_status == 'failed' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {% if order.payment_status == 'paid' %}Оплачено
+                                {% elif order.payment_status == 'cash_on_delivery' %}Наличными
+                                {% elif order.payment_status == 'failed' %}Ошибка
+                                {% else %}Ожидает{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if order.status == 'Новый' %}bg-info
+                                {% elif order.status == 'Готов к доставке' %}bg-warning
+                                {% elif order.status == 'В пути' %}bg-primary
+                                {% elif order.status == 'Доставлен' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                {% if order.status == 'Новый' %}
+                                <button class="btn btn-sm btn-warning" onclick="updateStatus({{ order.id }}, 'Готов к доставке')">
+                                    <i class="fas fa-truck"></i> К доставке
+                                </button>
+                                {% elif order.status == 'Готов к доставке' %}
+                                <button class="btn btn-sm btn-primary" onclick="updateStatus({{ order.id }}, 'В пути')">
+                                    <i class="fas fa-shipping-fast"></i> В пути
+                                </button>
+                                {% elif order.status == 'В пути' %}
+                                <button class="btn btn-sm btn-success" onclick="updateStatus({{ order.id }}, 'Доставлен')">
+                                    <i class="fas fa-check"></i> Доставлено
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateStatus(orderId, status) {
+    fetch('/courier/update_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при обновлении статуса');
+        }
+    });
+}
+</script>
+{% endblock %}

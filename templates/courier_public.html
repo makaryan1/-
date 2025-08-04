@@ -1,0 +1,53 @@
+
+{% extends "base.html" %}
+
+{% block title %}Курьер - Цветочный рай{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-truck"></i> Курьерская служба</h4>
+            </div>
+            <div class="card-body text-center">
+                <h5>Добро пожаловать в курьерскую службу!</h5>
+                <p class="text-muted">Выберите опцию для продолжения работы</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <i class="fas fa-sign-in-alt fa-3x text-warning mb-3"></i>
+                                <h5>Войти в систему</h5>
+                                <p>Авторизуйтесь для управления заказами</p>
+                                <a href="{{ url_for('courier_login') }}" class="btn btn-warning">
+                                    <i class="fas fa-key"></i> Войти
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-info">
+                            <div class="card-body">
+                                <i class="fas fa-phone fa-3x text-info mb-3"></i>
+                                <h5>Связаться с нами</h5>
+                                <p>Телефон для курьеров</p>
+                                <h4 class="text-info">+995 555 123 456</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Учетные данные для входа:</h6>
+                    <small class="text-muted">
+                        Курьер: courier@flowershop.com / courier123<br>
+                        Администратор: admin@flowershop.com / admin123
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
