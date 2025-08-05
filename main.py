@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash, get_flashed_messages
 import json
 import os
@@ -54,19 +53,19 @@ def process_card_payment(amount, payment_method, customer_info, bank_id=None):
         selected_bank = None
         if bank_id:
             selected_bank = next((bank for bank in AVAILABLE_BANKS if bank['id'] == bank_id), None)
-        
+
         if not selected_bank:
             selected_bank = AVAILABLE_BANKS[0]  # По умолчанию первый банк
-        
+
         # Рассчитываем комиссию банка
         processing_fee = (amount * selected_bank['processing_fee']) / 100
         total_amount = amount + processing_fee
-        
+
         payment_id = str(uuid.uuid4())
-        
+
         # Симуляция API банка (в реальном проекте здесь будет настоящий API)
         import random
-        
+
         # Разные банки имеют разную вероятность успеха для демонстрации
         success_rates = {
             'tbc_bank': 0.85,
@@ -74,10 +73,10 @@ def process_card_payment(amount, payment_method, customer_info, bank_id=None):
             'liberty_bank': 0.80,
             'procredit_bank': 0.75
         }
-        
+
         success_rate = success_rates.get(selected_bank['id'], 0.80)
         success = random.random() < success_rate
-        
+
         if success:
             return {
                 'success': True,
@@ -130,7 +129,7 @@ def get_user_info():
             'is_local': True,
             'role': session['user_role']
         }
-    
+
     # Проверяем сначала сессию (локальная регистрация)
     if 'user_id' in session:
         users = load_users()
@@ -144,7 +143,7 @@ def get_user_info():
                 'address': users[user_id].get('address', ''),
                 'is_local': True
             }
-    
+
     # Если нет локального пользователя, проверяем Replit Auth
     user_id = request.headers.get('X-Replit-User-Id')
     user_name = request.headers.get('X-Replit-User-Name') 
@@ -157,7 +156,7 @@ def get_user_info():
             'address': '',
             'is_local': False
         }
-    
+
     return None
 
 # Данные о цветах
@@ -215,7 +214,7 @@ FLOWERS = [
         'id': 5,
         'name': 'Лилии белые',
         'base_price': 56,
-        'image': 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=300',
+        'image': 'https://images.unsplash.com/photo-152531007254-f49212b5ac6d?w=300',
         'description': 'Элегантные белые лилии',
         'variants': [
             {'count': 3, 'name': 'Мини букет (3 лилии)', 'price': 168},
@@ -324,13 +323,13 @@ def gift_detail(gift_id):
 def add_to_cart(item_id):
     if 'cart' not in session:
         session['cart'] = {}
-    
+
     # Ищем среди цветов
     item = next((f for f in FLOWERS if f['id'] == item_id), None)
     # Если не найден среди цветов, ищем среди подарков
     if not item:
         item = next((g for g in GIFTS if g['id'] == item_id), None)
-    
+
     if item:
         # Используем первый вариант по умолчанию
         cart_key = f"{item_id}_0"
@@ -340,29 +339,29 @@ def add_to_cart(item_id):
             session['cart'][cart_key] = 1
         session.modified = True
         flash(f'{item["name"]} добавлен в корзину!')
-    
+
     return redirect(url_for('index'))
 
 @app.route('/add_to_cart_variant', methods=['POST'])
 def add_to_cart_variant():
     from flask import jsonify
-    
+
     if 'cart' not in session:
         session['cart'] = {}
-    
+
     data = request.get_json()
     item_id = data['item_id']
     variant_index = data['variant_index']
     quantity = data['quantity']
     item_type = data['item_type']
-    
+
     # Ищем товар
     item = None
     if item_type == 'flower':
         item = next((f for f in FLOWERS if f['id'] == item_id), None)
     else:
         item = next((g for g in GIFTS if g['id'] == item_id), None)
-    
+
     if item and variant_index < len(item['variants']):
         cart_key = f"{item_id}_{variant_index}"
         if cart_key in session['cart']:
@@ -371,7 +370,7 @@ def add_to_cart_variant():
             session['cart'][cart_key] = quantity
         session.modified = True
         return jsonify({'success': True})
-    
+
     return jsonify({'success': False})
 
 @app.route('/cart')
@@ -379,7 +378,7 @@ def cart():
     cart_items = []
     total = 0
     user = get_user_info()
-    
+
     if 'cart' in session:
         for cart_key, quantity in session['cart'].items():
             if '_' in cart_key:
@@ -390,7 +389,7 @@ def cart():
                 # Старый формат - совместимость
                 item_id = int(cart_key)
                 variant_index = 0
-            
+
             # Ищем среди цветов
             item = next((f for f in FLOWERS if f['id'] == item_id), None)
             item_type = 'flower'
@@ -398,7 +397,7 @@ def cart():
             if not item:
                 item = next((g for g in GIFTS if g['id'] == item_id), None)
                 item_type = 'gift'
-            
+
             if item and variant_index < len(item['variants']):
                 variant = item['variants'][variant_index]
                 item_total = variant['price'] * quantity
@@ -411,14 +410,14 @@ def cart():
                     'item_type': item_type
                 })
                 total += item_total
-    
+
     return render_template('cart.html', cart_items=cart_items, total=total, user=user)
 
 @app.route('/update_cart/<cart_key>/<int:quantity>')
 def update_cart(cart_key, quantity):
     if 'cart' not in session:
         session['cart'] = {}
-    
+
     if quantity <= 0:
         if cart_key in session['cart']:
             del session['cart'][cart_key]
@@ -426,7 +425,7 @@ def update_cart(cart_key, quantity):
     else:
         session['cart'][cart_key] = quantity
         flash('Количество обновлено')
-    
+
     session.modified = True
     return redirect(url_for('cart'))
 
@@ -443,24 +442,24 @@ def checkout():
     if 'cart' not in session or not session['cart']:
         flash('Корзина пуста')
         return redirect(url_for('index'))
-    
+
     user = get_user_info()
-    
+
     if request.method == 'POST':
         delivery_area = request.form['delivery_area']
         village = request.form.get('village', '')
         address = request.form['address']
         payment_method = request.form['payment_method']
-        
+
         # Формируем полный адрес
         full_address = address
         if delivery_area == 'village' and village:
             full_address = f"{village}, {address}"
         elif delivery_area in DELIVERY_AREAS:
             full_address = f"{DELIVERY_AREAS[delivery_area]['name']}, {address}"
-        
+
         delivery_price = get_delivery_price(delivery_area, village)
-        
+
         cart_total = 0
         for cart_key, qty in session['cart'].items():
             if '_' in cart_key:
@@ -470,23 +469,23 @@ def checkout():
             else:
                 item_id = int(cart_key)
                 variant_index = 0
-            
+
             # Ищем среди цветов
             item = next((f for f in FLOWERS if f['id'] == item_id), None)
             # Если не найден среди цветов, ищем среди подарков
             if not item:
                 item = next((g for g in GIFTS if g['id'] == item_id), None)
-            
+
             if item and variant_index < len(item['variants']):
                 variant = item['variants'][variant_index]
                 cart_total += variant['price'] * qty
-        
+
         # Обработка платежа
         payment_status = 'pending'
         payment_id = None
         payment_message = 'Ожидает оплаты'
         selected_bank = request.form.get('selected_bank')
-        
+
         if payment_method == 'card':
             # Автоматическая обработка платежа картой
             payment_result = process_card_payment(
@@ -499,7 +498,7 @@ def checkout():
                 },
                 selected_bank
             )
-            
+
             if payment_result['success']:
                 payment_status = 'paid'
                 payment_message = 'Оплачено картой'
@@ -540,15 +539,15 @@ def checkout():
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'status': 'Новый'
         }
-        
+
         save_order(order)
         session.pop('cart', None)
         flash('Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.')
         return redirect(url_for('order_success', order_id=order['id']))
-    
+
     cart_items = []
     cart_total = 0
-    
+
     for cart_key, quantity in session['cart'].items():
         if '_' in cart_key:
             item_id, variant_index = cart_key.split('_')
@@ -557,13 +556,13 @@ def checkout():
         else:
             item_id = int(cart_key)
             variant_index = 0
-        
+
         # Ищем среди цветов
         item = next((f for f in FLOWERS if f['id'] == item_id), None)
         # Если не найден среди цветов, ищем среди подарков
         if not item:
             item = next((g for g in GIFTS if g['id'] == item_id), None)
-        
+
         if item and variant_index < len(item['variants']):
             variant = item['variants'][variant_index]
             item_total = variant['price'] * quantity
@@ -574,7 +573,7 @@ def checkout():
                 'total': item_total
             })
             cart_total += item_total
-    
+
     return render_template('checkout.html', 
                          cart_items=cart_items, 
                          cart_total=cart_total, 
@@ -597,28 +596,28 @@ def register():
         confirm_password = request.form['confirm_password']
         phone = request.form.get('phone', '')
         address = request.form.get('address', '')
-        
+
         # Проверка данных
         if not all([name, email, password]):
             flash('Пожалуйста, заполните все обязательные поля')
             return render_template('register.html')
-        
+
         if password != confirm_password:
             flash('Пароли не совпадают')
             return render_template('register.html')
-        
+
         if len(password) < 6:
             flash('Пароль должен содержать минимум 6 символов')
             return render_template('register.html')
-        
+
         users = load_users()
-        
+
         # Проверка на существующий email
         for user_data in users.values():
             if user_data['email'] == email:
                 flash('Пользователь с таким email уже существует')
                 return render_template('register.html')
-        
+
         # Создание нового пользователя
         user_id = str(len(users) + 1)
         users[user_id] = {
@@ -629,12 +628,12 @@ def register():
             'address': address,
             'registration_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        
+
         save_users(users)
         session['user_id'] = user_id
         flash('Регистрация прошла успешно!')
         return redirect(url_for('index'))
-    
+
     user = get_user_info()
     return render_template('register.html', user=user)
 
@@ -643,37 +642,37 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        
+
         if not all([email, password]):
             flash('Пожалуйста, заполните все поля')
             return render_template('login.html')
-        
+
         # Проверяем системных пользователей (админ/курьер)
         if email in USER_ROLES and USER_ROLES[email]['password'] == password:
             user_role = USER_ROLES[email]['role']
             session['user_role'] = user_role
             session['admin_username'] = email
-            
+
             if user_role == 'admin':
                 flash(f'Добро пожаловать в админ панель, {email}!')
                 return redirect(url_for('admin_panel'))
             elif user_role == 'courier':
                 flash(f'Добро пожаловать в панель курьера, {email}!')
                 return redirect(url_for('courier_panel'))
-        
+
         users = load_users()
-        
+
         # Поиск обычного пользователя по email
         for user_id, user_data in users.items():
             if user_data['email'] == email and user_data['password'] == hash_password(password):
                 session['user_id'] = user_id
                 flash(f'Добро пожаловать, {user_data["name"]}!')
                 return redirect(url_for('index'))
-        
+
         flash('Неверный email или пароль')
         user = get_user_info()
         return render_template('login.html', user=user)
-    
+
     user = get_user_info()
     return render_template('login.html', user=user)
 
@@ -692,19 +691,19 @@ def profile():
     if not user:
         flash('Необходимо войти в систему')
         return redirect(url_for('login'))
-    
+
     if not user.get('is_local', False):
         flash('Профиль доступен только для зарегистрированных пользователей')
         return redirect(url_for('register'))
-    
+
     if request.method == 'POST':
         users = load_users()
         user_id = session['user_id']
-        
+
         users[user_id]['name'] = request.form['name']
         users[user_id]['phone'] = request.form['phone']
         users[user_id]['address'] = request.form['address']
-        
+
         # Изменение пароля (если указан)
         new_password = request.form.get('new_password')
         if new_password:
@@ -712,11 +711,11 @@ def profile():
                 flash('Пароль должен содержать минимум 6 символов')
                 return render_template('profile.html', user=user)
             users[user_id]['password'] = hash_password(new_password)
-        
+
         save_users(users)
         flash('Профиль обновлен успешно!')
         return redirect(url_for('profile'))
-    
+
     return render_template('profile.html', user=user)
 
 @app.route('/my_orders')
@@ -725,10 +724,10 @@ def my_orders():
     if not user:
         flash('Необходимо войти в систему')
         return redirect(url_for('login'))
-    
+
     orders = load_orders()
     user_orders = []
-    
+
     for order in orders:
         # Для локальных пользователей проверяем user_id
         if user.get('is_local') and order.get('user_id') == session.get('user_id'):
@@ -736,7 +735,7 @@ def my_orders():
         # Для Replit пользователей проверяем имя
         elif not user.get('is_local') and order.get('user_name') == user['name']:
             user_orders.append(order)
-    
+
     # Добавляем детали товаров к заказам
     for order in user_orders:
         order['items_details'] = []
@@ -746,14 +745,14 @@ def my_orders():
             # Если не найден среди цветов, ищем среди подарков
             if not item:
                 item = next((g for g in GIFTS if g['id'] == int(item_id)), None)
-            
+
             if item:
                 order['items_details'].append({
                     'flower': item,  # Оставляем название для совместимости с шаблоном
                     'quantity': quantity,
                     'total': item['price'] * quantity
                 })
-    
+
     return render_template('my_orders.html', orders=user_orders, user=user)
 
 # Роли пользователей
@@ -786,7 +785,7 @@ AVAILABLE_BANKS = [
     {
         'id': 'procredit_bank',
         'name': 'ProCredit Bank',
-        'logo': 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=100&h=50&fit=crop',
+        'logo': 'https://images.unsplash.com/photo-1559526324-593bc0f36f38?w=100&h=50&fit=crop',
         'processing_fee': 2.8
     }
 ]
@@ -835,12 +834,12 @@ def get_admin_stats():
     """Получить статистику для админ панели"""
     orders = load_orders()
     users = load_users()
-    
+
     total_orders = len(orders)
     total_revenue = sum(order.get('total', 0) for order in orders)
     total_users = len(users)
     total_products = len(FLOWERS) + len(GIFTS)
-    
+
     return {
         'total_orders': total_orders,
         'total_revenue': total_revenue,
@@ -853,12 +852,12 @@ def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         if username in USER_ROLES and USER_ROLES[username]['password'] == password:
             user_role = USER_ROLES[username]['role']
             session['user_role'] = user_role
             session['admin_username'] = username
-            
+
             if user_role == 'admin':
                 flash(f'Добро пожаловать в админ панель, {username}!')
                 return redirect(url_for('admin_panel'))
@@ -867,7 +866,7 @@ def admin_login():
                 return redirect(url_for('courier_panel'))
         else:
             flash('Неверный логин или пароль')
-    
+
     return render_template('admin_login.html')
 
 @app.route('/courier_login', methods=['GET', 'POST'])
@@ -875,7 +874,7 @@ def courier_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         if username in USER_ROLES and USER_ROLES[username]['password'] == password:
             user_role = USER_ROLES[username]['role']
             if user_role == 'courier':
@@ -887,18 +886,18 @@ def courier_login():
                 flash('У вас нет прав курьера')
         else:
             flash('Неверный логин или пароль')
-    
+
     return render_template('courier_login.html')
 
 @app.route('/admin')
 def admin_panel():
     if not is_admin():
         return redirect(url_for('admin_login'))
-    
+
     stats = get_admin_stats()
     orders = load_orders()
     users = load_users()
-    
+
     return render_template('admin.html', 
                          stats=stats, 
                          orders=orders, 
@@ -910,56 +909,58 @@ def admin_panel():
 def courier_panel():
     if not is_courier() and not is_admin():
         return redirect(url_for('courier_login'))
-    
+
     orders = load_orders()
     # Показываем заказы для доставки
     active_orders = [o for o in orders if o['status'] in ['Готов к доставке', 'В пути', 'Новый']]
-    
+
     return render_template('courier_panel.html', orders=active_orders)
 
 @app.route('/admin/update_order_status', methods=['POST'])
 def admin_update_order_status():
     if not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
     order_id = data['order_id']
     new_status = data['status']
-    
+
     orders = load_orders()
     for order in orders:
         if order['id'] == order_id:
             order['status'] = new_status
             break
-    
+
     with open('orders.json', 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
-    
+
     return {'success': True}
 
 @app.route('/admin/delete_order', methods=['POST'])
 def admin_delete_order():
     if not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
     order_id = data['order_id']
-    
+
     orders = load_orders()
     orders = [order for order in orders if order['id'] != order_id]
-    
+
     with open('orders.json', 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
-    
+
     return {'success': True}
 
 @app.route('/admin/add_flower', methods=['POST'])
 def admin_add_flower():
+    from flask import jsonify
+
     if not is_admin():
-        return {'success': False, 'error': 'Access denied'}
-    
+        return jsonify({'success': False, 'error': 'Access denied'})
+
     data = request.get_json()
-    
+
     # Найти максимальный ID и добавить 1
     max_id = max([f['id'] for f in FLOWERS]) if FLOWERS else 0
     new_flower = {
@@ -974,33 +975,34 @@ def admin_add_flower():
             {'count': 21, 'name': f'Большой (21 {data["name"].lower()})', 'price': data['base_price'] * 19}
         ]
     }
-    
+
     FLOWERS.append(new_flower)
     save_flowers()
-    
-    return {'success': True}
+
+    return jsonify({'success': True})
+
 
 @app.route('/admin/delete_flower', methods=['POST'])
 def admin_delete_flower():
     if not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
     flower_id = data['flower_id']
-    
+
     global FLOWERS
     FLOWERS = [f for f in FLOWERS if f['id'] != flower_id]
     save_flowers()
-    
+
     return {'success': True}
 
 @app.route('/admin/add_gift', methods=['POST'])
 def admin_add_gift():
     if not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
-    
+
     # Найти максимальный ID и добавить 1
     max_id = max([g['id'] for g in GIFTS]) if GIFTS else 100
     new_gift = {
@@ -1014,24 +1016,24 @@ def admin_add_gift():
             {'size': 'large', 'name': f'Большой {data["name"].lower()}', 'price': 350}
         ]
     }
-    
+
     GIFTS.append(new_gift)
     save_gifts()
-    
+
     return {'success': True}
 
 @app.route('/admin/delete_gift', methods=['POST'])
 def admin_delete_gift():
     if not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
     gift_id = data['gift_id']
-    
+
     global GIFTS
     GIFTS = [g for g in GIFTS if g['id'] != gift_id]
     save_gifts()
-    
+
     return {'success': True}
 
 @app.route('/retry_payment/<int:order_id>', methods=['POST'])
@@ -1039,13 +1041,13 @@ def retry_payment(order_id):
     """Повторная попытка оплаты"""
     orders = load_orders()
     order = next((o for o in orders if o['id'] == order_id), None)
-    
+
     if not order:
         return {'success': False, 'message': 'Заказ не найден'}
-    
+
     if order['payment_method'] != 'card':
         return {'success': False, 'message': 'Повтор доступен только для картных платежей'}
-    
+
     # Повторная обработка платежа
     payment_result = process_card_payment(
         order['total'],
@@ -1056,7 +1058,7 @@ def retry_payment(order_id):
             'email': order['email']
         }
     )
-    
+
     # Обновляем статус заказа
     for i, o in enumerate(orders):
         if o['id'] == order_id:
@@ -1068,11 +1070,11 @@ def retry_payment(order_id):
                 orders[i]['payment_status'] = 'failed'
                 orders[i]['payment_message'] = payment_result['message']
             break
-    
+
     # Сохраняем обновленные заказы
     with open('orders.json', 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
-    
+
     return payment_result
 
 @app.route('/courier')
@@ -1085,11 +1087,11 @@ def courier_update_status():
     """Обновление статуса заказа курьером"""
     if not is_courier() and not is_admin():
         return {'success': False, 'error': 'Access denied'}
-    
+
     data = request.get_json()
     order_id = data['order_id']
     new_status = data['status']
-    
+
     orders = load_orders()
     for order in orders:
         if order['id'] == order_id:
@@ -1097,10 +1099,10 @@ def courier_update_status():
             if new_status == 'Доставлен':
                 order['delivery_date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             break
-    
+
     with open('orders.json', 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
-    
+
     return {'success': True}
 
 @app.route('/admin/logout')
