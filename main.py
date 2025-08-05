@@ -1077,6 +1077,111 @@ def retry_payment(order_id):
 
     return payment_result
 
+@app.route('/admin/order_details/<int:order_id>')
+def admin_order_details(order_id):
+    """Получить детали заказа для админа"""
+    if not is_admin():
+        return {'success': False, 'error': 'Access denied'}
+    
+    orders = load_orders()
+    order = next((o for o in orders if o['id'] == order_id), None)
+    
+    if not order:
+        return {'success': False, 'message': 'Заказ не найден'}
+    
+    # Получаем детали товаров
+    items_details = []
+    for cart_key, quantity in order['items'].items():
+        if '_' in cart_key:
+            item_id, variant_index = cart_key.split('_')
+            item_id = int(item_id)
+            variant_index = int(variant_index)
+        else:
+            item_id = int(cart_key)
+            variant_index = 0
+
+        # Ищем среди цветов
+        item = next((f for f in FLOWERS if f['id'] == item_id), None)
+        item_type = 'flower'
+        # Если не найден среди цветов, ищем среди подарков
+        if not item:
+            item = next((g for g in GIFTS if g['id'] == item_id), None)
+            item_type = 'gift'
+
+        if item and variant_index < len(item['variants']):
+            variant = item['variants'][variant_index]
+            items_details.append({
+                'name': item['name'],
+                'variant_name': variant['name'],
+                'price': variant['price'],
+                'quantity': quantity,
+                'total': variant['price'] * quantity,
+                'type': item_type
+            })
+    
+    # Формируем HTML для деталей
+    html = f"""
+    <div class="row">
+        <div class="col-md-6">
+            <h6>Информация о клиенте</h6>
+            <p><strong>Имя:</strong> {order['name']}</p>
+            <p><strong>Телефон:</strong> {order['phone']}</p>
+            <p><strong>Email:</strong> {order['email']}</p>
+            <p><strong>Адрес:</strong> {order['address']}</p>
+        </div>
+        <div class="col-md-6">
+            <h6>Информация о заказе</h6>
+            <p><strong>Дата:</strong> {order['date']}</p>
+            <p><strong>Статус:</strong> {order['status']}</p>
+            <p><strong>Способ оплаты:</strong> {'Картой' if order['payment_method'] == 'card' else 'Наличными курьеру'}</p>
+            <p><strong>Статус оплаты:</strong> {order.get('payment_message', 'Не указано')}</p>
+        </div>
+    </div>
+    <hr>
+    <h6>Товары в заказе</h6>
+    <div class="table-responsive">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Вариант</th>
+                    <th>Цена</th>
+                    <th>Кол-во</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    
+    for item in items_details:
+        html += f"""
+                <tr>
+                    <td>{item['name']}</td>
+                    <td>{item['variant_name']}</td>
+                    <td>{item['price']}₾</td>
+                    <td>{item['quantity']}</td>
+                    <td><strong>{item['total']}₾</strong></td>
+                </tr>
+        """
+    
+    html += f"""
+            </tbody>
+        </table>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Стоимость товаров:</strong> {order['cart_total']}₾</p>
+            <p><strong>Доставка:</strong> {order['delivery_price']}₾</p>
+        </div>
+        <div class="col-md-6">
+            <h5><strong>Итого: {order['total']}₾</strong></h5>
+        </div>
+    </div>
+    """
+    
+    return {'success': True, 'html': html}
+
 @app.route('/courier')
 def courier_app():
     """Публичный интерфейс для курьеров"""

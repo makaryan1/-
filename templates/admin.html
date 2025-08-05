@@ -7,10 +7,12 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="fas fa-cogs"></i> Админ панель</h1>
+            <h1 class="text-primary"><i class="fas fa-cogs"></i> Админ панель</h1>
             <div>
                 {% if session.admin_username %}
-                <span class="badge bg-secondary me-2">{{ session.admin_username }}</span>
+                <span class="badge bg-secondary me-2 px-3 py-2">
+                    <i class="fas fa-user"></i> {{ session.admin_username }}
+                </span>
                 {% endif %}
                 <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">
                     <i class="fas fa-sign-out-alt"></i> Выход
@@ -23,12 +25,12 @@
 <!-- Статистика -->
 <div class="row mb-5">
     <div class="col-md-3">
-        <div class="card bg-primary text-white">
+        <div class="card bg-primary text-white shadow">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-shopping-cart fa-2x me-3"></i>
+                    <i class="fas fa-shopping-cart fa-3x me-3"></i>
                     <div>
-                        <h4>{{ stats.total_orders }}</h4>
+                        <h3 class="mb-0">{{ stats.total_orders }}</h3>
                         <small>Всего заказов</small>
                     </div>
                 </div>
@@ -36,12 +38,12 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-success text-white">
+        <div class="card bg-success text-white shadow">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-dollar-sign fa-2x me-3"></i>
+                    <i class="fas fa-lari-sign fa-3x me-3"></i>
                     <div>
-                        <h4>{{ stats.total_revenue }}₾</h4>
+                        <h3 class="mb-0">{{ stats.total_revenue }}₾</h3>
                         <small>Общий доход</small>
                     </div>
                 </div>
@@ -49,12 +51,12 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-info text-white">
+        <div class="card bg-info text-white shadow">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-users fa-2x me-3"></i>
+                    <i class="fas fa-users fa-3x me-3"></i>
                     <div>
-                        <h4>{{ stats.total_users }}</h4>
+                        <h3 class="mb-0">{{ stats.total_users }}</h3>
                         <small>Пользователей</small>
                     </div>
                 </div>
@@ -62,12 +64,12 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-warning text-white">
+        <div class="card bg-warning text-white shadow">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-box fa-2x me-3"></i>
+                    <i class="fas fa-box fa-3x me-3"></i>
                     <div>
-                        <h4>{{ stats.total_products }}</h4>
+                        <h3 class="mb-0">{{ stats.total_products }}</h3>
                         <small>Товаров</small>
                     </div>
                 </div>
@@ -79,24 +81,24 @@
 <!-- Навигация по разделам -->
 <div class="row mb-4">
     <div class="col-12">
-        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <ul class="nav nav-pills nav-fill" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                <button class="nav-link active btn-pink" id="orders-tab" data-bs-toggle="pill" data-bs-target="#orders" type="button" role="tab">
                     <i class="fas fa-shopping-cart"></i> Заказы
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="flowers-tab" data-bs-toggle="tab" data-bs-target="#flowers" type="button" role="tab">
+                <button class="nav-link btn-pink" id="flowers-tab" data-bs-toggle="pill" data-bs-target="#flowers" type="button" role="tab">
                     <i class="fas fa-rose"></i> Цветы
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="gifts-tab" data-bs-toggle="tab" data-bs-target="#gifts" type="button" role="tab">
+                <button class="nav-link btn-pink" id="gifts-tab" data-bs-toggle="pill" data-bs-target="#gifts" type="button" role="tab">
                     <i class="fas fa-gift"></i> Подарки
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                <button class="nav-link btn-pink" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab">
                     <i class="fas fa-users"></i> Пользователи
                 </button>
             </li>
@@ -107,14 +109,14 @@
 <div class="tab-content" id="adminTabContent">
     <!-- Заказы -->
     <div class="tab-pane fade show active" id="orders" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-shopping-cart"></i> Управление заказами</h5>
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Управление заказами</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Дата</th>
@@ -129,11 +131,11 @@
                         <tbody>
                             {% for order in orders %}
                             <tr>
-                                <td>{{ order.id }}</td>
-                                <td>{{ order.date }}</td>
+                                <td><strong>#{{ order.id }}</strong></td>
+                                <td>{{ order.date.split(' ')[0] }}</td>
                                 <td>{{ order.name }}</td>
                                 <td>{{ order.phone }}</td>
-                                <td>{{ order.total }}₾</td>
+                                <td><strong>{{ order.total }}₾</strong></td>
                                 <td>
                                     {% if order.payment_status == 'paid' %}
                                         <span class="badge bg-success">
@@ -141,22 +143,20 @@
                                         </span>
                                     {% elif order.payment_status == 'cash_on_delivery' %}
                                         <span class="badge bg-warning">
-                                            <i class="fas fa-money-bill-wave"></i> Наличные курьеру
+                                            <i class="fas fa-money-bill-wave"></i> Наличные
                                         </span>
                                     {% elif order.payment_status == 'failed' %}
                                         <span class="badge bg-danger">
-                                            <i class="fas fa-exclamation-triangle"></i> Ошибка оплаты
+                                            <i class="fas fa-exclamation-triangle"></i> Ошибка
                                         </span>
                                     {% else %}
                                         <span class="badge bg-secondary">
                                             <i class="fas fa-clock"></i> Ожидает
                                         </span>
                                     {% endif %}
-                                    <br>
-                                    <small class="text-muted">{{ order.payment_message or 'Не указано' }}</small>
                                 </td>
                                 <td>
-                                    <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, this.value)">
+                                    <select class="form-select form-select-sm status-select" data-order-id="{{ order.id }}">
                                         <option value="Новый" {% if order.status == 'Новый' %}selected{% endif %}>Новый</option>
                                         <option value="В обработке" {% if order.status == 'В обработке' %}selected{% endif %}>В обработке</option>
                                         <option value="Готов к доставке" {% if order.status == 'Готов к доставке' %}selected{% endif %}>Готов к доставке</option>
@@ -165,17 +165,19 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-info" onclick="viewOrder({{ order.id }})">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    {% if order.payment_status == 'failed' and order.payment_method == 'card' %}
-                                        <button class="btn btn-sm btn-warning" onclick="retryPayment({{ order.id }})">
-                                            <i class="fas fa-redo"></i>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-info" onclick="viewOrderDetails({{ order.id }})">
+                                            <i class="fas fa-eye"></i>
                                         </button>
-                                    {% endif %}
-                                    <button class="btn btn-sm btn-danger" onclick="deleteOrder({{ order.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                        {% if order.payment_status == 'failed' and order.payment_method == 'card' %}
+                                            <button class="btn btn-sm btn-warning" onclick="retryPayment({{ order.id }})">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-danger" onclick="deleteOrder({{ order.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -188,17 +190,17 @@
 
     <!-- Цветы -->
     <div class="tab-pane fade" id="flowers" role="tabpanel">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="fas fa-rose"></i> Управление цветами</h5>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFlowerModal">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-rose"></i> Управление цветами</h5>
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addFlowerModal">
                     <i class="fas fa-plus"></i> Добавить цветок
                 </button>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Изображение</th>
@@ -211,18 +213,23 @@
                         <tbody>
                             {% for flower in flowers %}
                             <tr>
-                                <td>{{ flower.id }}</td>
-                                <td><img src="{{ flower.image }}" alt="{{ flower.name }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
-                                <td>{{ flower.name }}</td>
-                                <td>{{ flower.description[:50] }}...</td>
-                                <td>{{ flower.base_price }}₾</td>
+                                <td><strong>{{ flower.id }}</strong></td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning" onclick="editFlower({{ flower.id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteFlower({{ flower.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <img src="{{ flower.image }}" alt="{{ flower.name }}" 
+                                         class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                </td>
+                                <td><strong>{{ flower.name }}</strong></td>
+                                <td>{{ flower.description[:30] }}...</td>
+                                <td><strong>{{ flower.base_price }}₾</strong></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-warning" onclick="editFlower({{ flower.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteFlower({{ flower.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -235,17 +242,17 @@
 
     <!-- Подарки -->
     <div class="tab-pane fade" id="gifts" role="tabpanel">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="fas fa-gift"></i> Управление подарками</h5>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-gift"></i> Управление подарками</h5>
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addGiftModal">
                     <i class="fas fa-plus"></i> Добавить подарок
                 </button>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Изображение</th>
@@ -257,17 +264,22 @@
                         <tbody>
                             {% for gift in gifts %}
                             <tr>
-                                <td>{{ gift.id }}</td>
-                                <td><img src="{{ gift.image }}" alt="{{ gift.name }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
-                                <td>{{ gift.name }}</td>
-                                <td>{{ gift.description[:50] }}...</td>
+                                <td><strong>{{ gift.id }}</strong></td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning" onclick="editGift({{ gift.id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteGift({{ gift.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <img src="{{ gift.image }}" alt="{{ gift.name }}" 
+                                         class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                </td>
+                                <td><strong>{{ gift.name }}</strong></td>
+                                <td>{{ gift.description[:30] }}...</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-warning" onclick="editGift({{ gift.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteGift({{ gift.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -280,14 +292,14 @@
 
     <!-- Пользователи -->
     <div class="tab-pane fade" id="users" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-users"></i> Управление пользователями</h5>
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Управление пользователями</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Имя</th>
@@ -300,7 +312,7 @@
                         <tbody>
                             {% for user_id, user_data in users.items() %}
                             <tr>
-                                <td>{{ user_id }}</td>
+                                <td><strong>{{ user_id }}</strong></td>
                                 <td>{{ user_data.name }}</td>
                                 <td>{{ user_data.email }}</td>
                                 <td>{{ user_data.get('phone', '-') }}</td>
@@ -325,9 +337,9 @@
 <div class="modal fade" id="addFlowerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-success text-white">
                 <h5 class="modal-title">Добавить цветок</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="addFlowerForm">
                 <div class="modal-body">
@@ -344,13 +356,13 @@
                         <textarea class="form-control" id="flowerDescription" rows="3" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="flowerBasePrice" class="form-label">Базовая цена</label>
+                        <label for="flowerBasePrice" class="form-label">Базовая цена (₾)</label>
                         <input type="number" class="form-control" id="flowerBasePrice" required>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Добавить</button>
+                    <button type="submit" class="btn btn-success">Добавить</button>
                 </div>
             </form>
         </div>
@@ -361,9 +373,9 @@
 <div class="modal fade" id="addGiftModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-info text-white">
                 <h5 class="modal-title">Добавить подарок</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="addGiftForm">
                 <div class="modal-body">
@@ -382,15 +394,84 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Добавить</button>
+                    <button type="submit" class="btn btn-info">Добавить</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Модальное окно детали заказа -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="orderDetailsTitle">Детали заказа</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsBody">
+                <!-- Содержимое будет загружено через JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-pink {
+    background: linear-gradient(45deg, #ff6b9d, #d63384);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-pink:hover,
+.btn-pink.active {
+    background: linear-gradient(45deg, #d63384, #b02a5b);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.status-select {
+    min-width: 150px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 107, 157, 0.1);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+</style>
+
 <script>
 // Функции для работы с заказами
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем обработчики для изменения статуса заказа
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.dataset.orderId;
+            const newStatus = this.value;
+            
+            if (confirm(`Изменить статус заказа #${orderId} на "${newStatus}"?`)) {
+                updateOrderStatus(orderId, newStatus);
+            } else {
+                this.value = this.dataset.originalValue || this.options[0].value;
+            }
+        });
+        
+        // Сохраняем исходное значение
+        select.dataset.originalValue = select.value;
+    });
+});
+
 function updateOrderStatus(orderId, newStatus) {
     fetch('/admin/update_order_status', {
         method: 'POST',
@@ -405,15 +486,19 @@ function updateOrderStatus(orderId, newStatus) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showNotification('Статус заказа успешно обновлен', 'success');
+            setTimeout(() => location.reload(), 1000);
         } else {
-            alert('Ошибка при обновлении статуса');
+            showNotification('Ошибка при обновлении статуса', 'error');
         }
+    })
+    .catch(error => {
+        showNotification('Ошибка при обновлении статуса', 'error');
     });
 }
 
 function deleteOrder(orderId) {
-    if (confirm('Вы уверены, что хотите удалить этот заказ?')) {
+    if (confirm(`Вы уверены, что хотите удалить заказ #${orderId}? Это действие нельзя отменить.`)) {
         fetch('/admin/delete_order', {
             method: 'POST',
             headers: {
@@ -426,12 +511,34 @@ function deleteOrder(orderId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showNotification('Заказ успешно удален', 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Ошибка при удалении заказа');
+                showNotification('Ошибка при удалении заказа', 'error');
             }
+        })
+        .catch(error => {
+            showNotification('Ошибка при удалении заказа', 'error');
         });
     }
+}
+
+function viewOrderDetails(orderId) {
+    // Загружаем детали заказа
+    fetch(`/admin/order_details/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('orderDetailsTitle').textContent = `Заказ #${orderId}`;
+                document.getElementById('orderDetailsBody').innerHTML = data.html;
+                new bootstrap.Modal(document.getElementById('orderDetailsModal')).show();
+            } else {
+                showNotification('Ошибка при загрузке деталей заказа', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Ошибка при загрузке деталей заказа', 'error');
+        });
 }
 
 // Функции для работы с цветами
@@ -445,25 +552,32 @@ document.getElementById('addFlowerForm').addEventListener('submit', function(e) 
         base_price: parseInt(document.getElementById('flowerBasePrice').value)
     };
     
-    fetch('/admin/add_flower', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Ошибка при добавлении цветка');
-        }
-    });
+    if (confirm('Добавить новый цветок?')) {
+        fetch('/admin/add_flower', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Цветок успешно добавлен', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('addFlowerModal')).hide();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Ошибка при добавлении цветка', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Ошибка при добавлении цветка', 'error');
+        });
+    }
 });
 
 function deleteFlower(flowerId) {
-    if (confirm('Вы уверены, что хотите удалить этот цветок?')) {
+    if (confirm(`Вы уверены, что хотите удалить цветок #${flowerId}? Это действие нельзя отменить.`)) {
         fetch('/admin/delete_flower', {
             method: 'POST',
             headers: {
@@ -476,10 +590,14 @@ function deleteFlower(flowerId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showNotification('Цветок успешно удален', 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Ошибка при удалении цветка');
+                showNotification('Ошибка при удалении цветка', 'error');
             }
+        })
+        .catch(error => {
+            showNotification('Ошибка при удалении цветка', 'error');
         });
     }
 }
@@ -494,25 +612,32 @@ document.getElementById('addGiftForm').addEventListener('submit', function(e) {
         description: document.getElementById('giftDescription').value
     };
     
-    fetch('/admin/add_gift', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Ошибка при добавлении подарка');
-        }
-    });
+    if (confirm('Добавить новый подарок?')) {
+        fetch('/admin/add_gift', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Подарок успешно добавлен', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('addGiftModal')).hide();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Ошибка при добавлении подарка', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Ошибка при добавлении подарка', 'error');
+        });
+    }
 });
 
 function deleteGift(giftId) {
-    if (confirm('Вы уверены, что хотите удалить этот подарок?')) {
+    if (confirm(`Вы уверены, что хотите удалить подарок #${giftId}? Это действие нельзя отменить.`)) {
         fetch('/admin/delete_gift', {
             method: 'POST',
             headers: {
@@ -525,16 +650,20 @@ function deleteGift(giftId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showNotification('Подарок успешно удален', 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Ошибка при удалении подарка');
+                showNotification('Ошибка при удалении подарка', 'error');
             }
+        })
+        .catch(error => {
+            showNotification('Ошибка при удалении подарка', 'error');
         });
     }
 }
 
 function retryPayment(orderId) {
-    if (confirm('Повторить попытку оплаты?')) {
+    if (confirm(`Повторить попытку оплаты для заказа #${orderId}?`)) {
         fetch('/retry_payment/' + orderId, {
             method: 'POST',
             headers: {
@@ -544,29 +673,51 @@ function retryPayment(orderId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Платеж успешно обработан!');
-                location.reload();
+                showNotification('Платеж успешно обработан!', 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Ошибка оплаты: ' + data.message);
+                showNotification('Ошибка оплаты: ' + data.message, 'error');
             }
+        })
+        .catch(error => {
+            showNotification('Ошибка оплаты', 'error');
         });
     }
 }
 
-function viewOrder(orderId) {
-    alert('Просмотр заказа #' + orderId + ' (функция в разработке)');
-}
-
 function editFlower(flowerId) {
-    alert('Редактирование цветка #' + flowerId + ' (функция в разработке)');
+    showNotification('Функция редактирования в разработке', 'info');
 }
 
 function editGift(giftId) {
-    alert('Редактирование подарка #' + giftId + ' (функция в разработке)');
+    showNotification('Функция редактирования в разработке', 'info');
 }
 
 function viewUserOrders(userId) {
-    alert('Просмотр заказов пользователя #' + userId + ' (функция в разработке)');
+    showNotification('Функция просмотра заказов пользователя в разработке', 'info');
+}
+
+// Функция для показа уведомлений
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 
+                      type === 'error' ? 'alert-danger' : 
+                      type === 'info' ? 'alert-info' : 'alert-warning';
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 5000);
 }
 </script>
 {% endblock %}

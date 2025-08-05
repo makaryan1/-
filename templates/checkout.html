@@ -112,35 +112,47 @@
                         <div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="payment_method" value="cash" id="cash" checked onchange="toggleBankSelection()">
-                                <label class="form-check-label" for="cash">
+                                <label class="form-label" for="cash">
                                     <i class="fas fa-money-bill-wave"></i> Наличными курьеру
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" value="card" id="card" onchange="toggleBankSelection()">
-                                <label class="form-check-label" for="card">
-                                    <i class="fas fa-credit-card"></i> Банковской картой онлайн
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" required onchange="toggleBankSelection()">
+                                <label class="form-label" for="card">
+                                    <i class="fas fa-credit-card text-primary"></i> Банковская карта
                                 </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Выбор банка -->
-                    <div class="mb-3" id="bank-selection" style="display: none;">
-                        <label class="form-label">Выберите банк для оплаты</label>
-                        <div class="row">
-                            {% for bank in available_banks %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card bank-card" onclick="selectBank('{{ bank.id }}')">
-                                    <div class="card-body text-center">
-                                        <img src="{{ bank.logo }}" alt="{{ bank.name }}" class="bank-logo mb-2">
-                                        <h6>{{ bank.name }}</h6>
-                                        <small class="text-muted">Комиссия: {{ bank.processing_fee }}%</small>
-                                        <input type="radio" name="selected_bank" value="{{ bank.id }}" class="bank-radio" style="display: none;">
+                                <div id="bank-selection" class="mt-3" style="display: none;">
+                                    <label class="form-label">Выберите банк:</label>
+                                    <div class="row">
+                                        {% for bank in available_banks %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="card bank-card" data-bank-id="{{ bank.id }}">
+                                                <div class="card-body p-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="selected_bank" 
+                                                               id="bank_{{ bank.id }}" value="{{ bank.id }}" 
+                                                               {% if loop.first %}checked{% endif %}>
+                                                        <label class="form-check-label d-flex align-items-center" for="bank_{{ bank.id }}">
+                                                            <img src="{{ bank.logo }}" alt="{{ bank.name }}" 
+                                                                 style="width: 30px; height: 20px; object-fit: cover; margin-right: 10px;">
+                                                            <div>
+                                                                <strong>{{ bank.name }}</strong>
+                                                                <br>
+                                                                <small class="text-muted">Комиссия: {{ bank.processing_fee }}%</small>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="alert alert-info mt-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Внимание:</strong> При оплате картой будет взиматься комиссия банка в размере от 2% до 3%.
                                     </div>
                                 </div>
                             </div>
-                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -203,6 +215,31 @@ function initMap() {
 }
 </script>
 
+<style>
+.bank-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #dee2e6;
+}
+
+.bank-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.bank-card.border-primary {
+    border-color: #0d6efd !important;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.payment-summary {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+</style>
+
 <script>
 function updateDeliveryOptions() {
     const deliveryArea = document.getElementById('delivery_area');
@@ -249,10 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDeliveryOptions();
     toggleVillageDetails(); // Initial call to set village select visibility
 
-    const paymentCash = document.getElementById('cash');
-    const paymentCard = document.getElementById('card');
-    // Removed the duplicate cardPaymentInfo variable and its logic as it's now handled by toggleBankSelection
-
     // Initial call to set bank selection visibility
     toggleBankSelection();
 });
@@ -264,7 +297,7 @@ function toggleBankSelection() {
     if (cardOption.checked) {
         bankSelection.style.display = 'block';
         // Выбираем первый банк по умолчанию
-        const firstBankRadio = document.querySelector('.bank-radio');
+        const firstBankRadio = document.querySelector('.bank-card .form-check-input');
         if (firstBankRadio) {
             firstBankRadio.checked = true;
             // Find the parent card and add the 'selected' class
@@ -279,17 +312,21 @@ function toggleBankSelection() {
     }
 }
 
+// Function to handle bank card selection
 function selectBank(bankId) {
-    // Убираем выделение со всех карточек банков
+    // Remove 'selected' class from all bank cards
     document.querySelectorAll('.bank-card').forEach(card => {
         card.classList.remove('selected');
     });
 
-    // Выделяем выбранную карточку
-    event.currentTarget.classList.add('selected');
+    // Add 'selected' class to the clicked bank card
+    const clickedCard = document.querySelector(`.bank-card[data-bank-id="${bankId}"]`);
+    if (clickedCard) {
+        clickedCard.classList.add('selected');
+    }
 
-    // Отмечаем соответствующий radio button
-    const bankRadio = document.querySelector(`input[value="${bankId}"]`);
+    // Check the corresponding radio button
+    const bankRadio = document.getElementById(`bank_${bankId}`);
     if (bankRadio) {
         bankRadio.checked = true;
     }
@@ -307,34 +344,5 @@ function toggleVillageDetails() {
     }
 }
 </script>
-
-<style>
-.bank-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid #e9ecef;
-}
-
-.bank-card:hover {
-    border-color: #007bff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.bank-card.selected {
-    border-color: #28a745;
-    background-color: #f8fff9;
-}
-
-.bank-logo {
-    width: 80px;
-    height: 40px;
-    object-fit: contain;
-}
-
-.bank-radio {
-    display: none !important;
-}
-</style>
 
 {% endblock %}
