@@ -176,28 +176,34 @@
                 <i class="fas fa-flower-daffodil"></i> Цветочный рай
             </a>
             <div class="navbar-nav ms-auto">
-                {% if user and (user.get('role') == 'admin' or user.get('role') == 'courier') %}
-                    <!-- Специальная навигация для админа и курьера -->
-                    {% if user.get('role') == 'admin' %}
-                        <a class="nav-link" href="{{ url_for('admin_panel') }}">
-                            <i class="fas fa-shield-alt"></i> Админ панель
-                        </a>
-                    {% elif user.get('role') == 'courier' %}
-                        <a class="nav-link" href="{{ url_for('courier_panel') }}">
-                            <i class="fas fa-truck"></i> Панель курьера
-                        </a>
-                    {% endif %}
+                {% if user and user.get('role') == 'admin' %}
+                    <!-- Навигация для админа -->
+                    <a class="nav-link" href="{{ url_for('index') }}">
+                        <i class="fas fa-home"></i> Главная
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_panel') }}">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> 
-                            {% if user.get('role') == 'admin' %}
-                                <span class="badge bg-dark">Админ</span> {{ user.name }}
-                            {% elif user.get('role') == 'courier' %}
-                                <span class="badge bg-warning">Курьер</span> {{ user.name }}
-                            {% endif %}
+                            <span class="badge bg-dark">Админ</span> {{ user.name }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('admin_logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </a></li>
+                        </ul>
+                    </li>
+                {% elif user and user.get('role') == 'courier' %}
+                    <!-- Навигация для курьера - только панель курьера -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="courierDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> 
+                            <span class="badge bg-warning">Курьер</span> {{ user.name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('courier_logout') }}">
                                 <i class="fas fa-sign-out-alt"></i> Выйти
                             </a></li>
                         </ul>
@@ -245,7 +251,7 @@
                         </div>
                     {% endif %}
                 {% endif %}
-                
+
             </div>
         </div>
     </nav>

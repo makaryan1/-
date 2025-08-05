@@ -299,24 +299,39 @@ def save_order(order):
 @app.route('/')
 def index():
     user = get_user_info()
+    
+    # Если это курьер, перенаправляем на панель курьера
+    if user and user.get('role') == 'courier':
+        return redirect(url_for('courier_panel'))
+    
     return render_template('index.html', flowers=FLOWERS, gifts=GIFTS, user=user)
 
 @app.route('/flower/<int:flower_id>')
 def flower_detail(flower_id):
+    user = get_user_info()
+    
+    # Курьеры не могут просматривать товары
+    if user and user.get('role') == 'courier':
+        return redirect(url_for('courier_panel'))
+    
     flower = next((f for f in FLOWERS if f['id'] == flower_id), None)
     if not flower:
         flash('Товар не найден')
         return redirect(url_for('index'))
-    user = get_user_info()
     return render_template('flower_detail.html', flower=flower, user=user)
 
 @app.route('/gift/<int:gift_id>')
 def gift_detail(gift_id):
+    user = get_user_info()
+    
+    # Курьеры не могут просматривать товары
+    if user and user.get('role') == 'courier':
+        return redirect(url_for('courier_panel'))
+    
     gift = next((g for g in GIFTS if g['id'] == gift_id), None)
     if not gift:
         flash('Товар не найден')
         return redirect(url_for('index'))
-    user = get_user_info()
     return render_template('gift_detail.html', gift=gift, user=user)
 
 @app.route('/add_to_cart/<int:item_id>')
@@ -375,9 +390,14 @@ def add_to_cart_variant():
 
 @app.route('/cart')
 def cart():
+    user = get_user_info()
+    
+    # Курьеры не могут просматривать корзину
+    if user and user.get('role') == 'courier':
+        return redirect(url_for('courier_panel'))
+    
     cart_items = []
     total = 0
-    user = get_user_info()
 
     if 'cart' in session:
         for cart_key, quantity in session['cart'].items():
@@ -439,11 +459,15 @@ def remove_from_cart(cart_key):
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
+    user = get_user_info()
+    
+    # Курьеры не могут оформлять заказы
+    if user and user.get('role') == 'courier':
+        return redirect(url_for('courier_panel'))
+    
     if 'cart' not in session or not session['cart']:
         flash('Корзина пуста')
         return redirect(url_for('index'))
-
-    user = get_user_info()
 
     if request.method == 'POST':
         delivery_area = request.form['delivery_area']
@@ -654,10 +678,10 @@ def login():
             session['admin_username'] = email
 
             if user_role == 'admin':
-                flash(f'Добро пожаловать в админ панель, {email}!')
+                flash(f'Добро пожаловать, {email}!')
                 return redirect(url_for('admin_panel'))
             elif user_role == 'courier':
-                flash(f'Добро пожаловать в панель курьера, {email}!')
+                flash(f'Добро пожаловать, курьер {email}!')
                 return redirect(url_for('courier_panel'))
 
         users = load_users()
